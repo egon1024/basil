@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "basil"
+version = "0.0.1"
+description = "A terminal based client for Sensu"
+authors = ["Cole Tuininga <cole.tuininga@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9.0"
+fawlty = { url = "https://github.com/egon1024/fawlty/releases/download/0.2.0/fawlty-0.2.0-py3-none-any.whl" }
+PyYAML = "^6.0.2"
+textual = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+basil = "basil.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

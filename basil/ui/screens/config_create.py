@@ -1,6 +1,6 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.containers import Container, Vertical
+from textual.containers import Container, Vertical, ScrollableContainer
 from textual.widgets import Input, Button, Static, Label
 from pathlib import Path
 from basil.ui.widgets.server_config import ServerConfigWidget
@@ -19,9 +19,10 @@ class ConfigCreateScreen(Screen):
     
     #create-container {
         width: 70;
-        height: auto;
+        max-height: 90vh;
         border: solid $primary;
         padding: 1 2;
+        overflow-y: auto;
     }
     
     #title {
@@ -70,7 +71,7 @@ class ConfigCreateScreen(Screen):
         """
         Create the UI - starts with password entry (twice).
         """
-        with Container(id="create-container"):
+        with ScrollableContainer(id="create-container"):
             yield Label("Create New Configuration", id="title")
             yield Static(
                 "Enter a password to encrypt your configuration file.",
@@ -105,9 +106,6 @@ class ConfigCreateScreen(Screen):
         if event.button.id == "action-button":
             if self.step == 1:
                 self._confirm_password()
-        elif event.button.id == "save-button":
-            if self.step == 2:
-                self._save_config()
     
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """
@@ -149,7 +147,7 @@ class ConfigCreateScreen(Screen):
         """
         Switch to server configuration step.
         """
-        container = self.query_one("#create-container", Container)
+        container = self.query_one("#create-container", ScrollableContainer)
         container.remove_children()
         
         # Mount new widgets with unique IDs
@@ -159,7 +157,6 @@ class ConfigCreateScreen(Screen):
             id="info-message-step2"
         ))
         container.mount(ServerConfigWidget(id="server-widget"))
-        container.mount(Button("Save Configuration", variant="primary", id="save-button", disabled=True))
         container.mount(Static("", id="error-message-step2"))
     
     def on_server_config_widget_connection_tested(
@@ -171,11 +168,10 @@ class ConfigCreateScreen(Screen):
         if message.success:
             self.connection_tested = True
             self.server_config = message.config
-            # Enable save button
-            self.query_one("#save-button", Button).disabled = False
+            # Automatically save and proceed after successful test
+            self._save_config()
         else:
             self.connection_tested = False
-            self.query_one("#save-button", Button).disabled = True
     
     def _save_config(self) -> None:
         """

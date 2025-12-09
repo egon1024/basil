@@ -27,6 +27,14 @@ class ResourceDetailWidget(ScrollableContainer):
     }
     """
     
+    def on_key(self, event) -> None:
+        """Override to not consume e, n, s, c, r keys - let them bubble to Screen."""
+        if event.key in ('e', 'n', 'c', 'r'):
+            # Don't handle these keys, let them bubble up
+            return
+        # For 's' and other keys, use default ScrollableContainer behavior
+        super().on_key(event)
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_resource: SensuResource | None = None

@@ -2,8 +2,27 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Header, Footer, TabbedContent, TabPane, Static, DataTable
 from textual.containers import Horizontal, Vertical
+from textual.binding import Binding
+from textual.message import Message
 from basil.ui.widgets.resource_list import ResourceListWidget
 from basil.ui.widgets.resource_detail import ResourceDetailWidget
+
+
+class CustomTabbedContent(TabbedContent):
+    """TabbedContent that doesn't consume our custom key bindings."""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Disable automatic tab switching when focus changes
+        self.can_focus_children = False
+    
+    def on_key(self, event) -> None:
+        """Override to not handle e, n, s, c, r keys - let them bubble to Screen."""
+        if event.key in ('e', 'n', 's', 'c', 'r'):
+            # Don't handle these keys, let them bubble up to the Screen
+            return
+        # For all other keys, use default TabbedContent behavior
+        super().on_key(event)
 
 
 class MainScreen(Screen):
@@ -12,11 +31,11 @@ class MainScreen(Screen):
     """
     
     BINDINGS = [
-        ("e", "switch_tab('events')", "Events"),
-        ("n", "switch_tab('entities')", "Entities"),
-        ("s", "switch_tab('silences')", "Silences"),
-        ("c", "switch_tab('connections')", "Connections"),
-        ("r", "refresh_data", "Refresh"),
+        Binding("e", "switch_tab('events')", "Events", show=True, priority=True),
+        Binding("n", "switch_tab('entities')", "Entities", show=True, priority=True),
+        Binding("s", "switch_tab('silences')", "Silences", show=True, priority=True),
+        Binding("c", "switch_tab('connections')", "Connections", show=True, priority=True),
+        Binding("r", "refresh_data", "Refresh", show=True, priority=True),
     ]
     
     CSS = """
@@ -39,7 +58,7 @@ class MainScreen(Screen):
         """
         yield Header()
         
-        with TabbedContent(initial="events"):
+        with CustomTabbedContent(initial="events"):
             with TabPane("Events", id="events"):
                 with Horizontal(classes="split-view"):
                     yield ResourceListWidget("events", id="events-list", classes="list-pane")
@@ -126,6 +145,8 @@ class MainScreen(Screen):
         except Exception:
             # Connections tab doesn't have a detail widget
             pass
+    
+
     
     def action_switch_tab(self, tab_id: str) -> None:
         """

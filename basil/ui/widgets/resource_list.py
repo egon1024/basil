@@ -21,12 +21,14 @@ class ResourceListWidget(DataTable):
         self.resource_type = resource_type
         self.resources: List[SensuResource] = []
         self.cursor_type = "row"
+        self._columns_setup = False
     
     def on_mount(self) -> None:
         """
         Set up the table when mounted.
         """
         self._setup_columns()
+        self._columns_setup = True
     
     def _setup_columns(self) -> None:
         """
@@ -49,8 +51,12 @@ class ResourceListWidget(DataTable):
         Load resources into the table.
         """
         self.resources = resources
-        self.clear()
         
+        # Always clear and reset - this ensures consistency
+        self.clear(columns=True)
+        self._setup_columns()
+        
+        # Add new rows
         for resource in resources:
             row_data = self._extract_row_data(resource)
             self.add_row(*row_data)
@@ -62,38 +68,70 @@ class ResourceListWidget(DataTable):
         data = resource.data
         
         if self.resource_type == "events":
+            # Event objects have entity and check attributes
+            entity_name = getattr(getattr(data, 'entity', None), 'metadata', None)
+            entity_name = getattr(entity_name, 'name', 'N/A') if entity_name else 'N/A'
+            
+            check_name = getattr(getattr(data, 'check', None), 'metadata', None)
+            check_name = getattr(check_name, 'name', 'N/A') if check_name else 'N/A'
+            
+            check = getattr(data, 'check', None)
+            status = str(getattr(check, 'status', 'N/A')) if check else 'N/A'
+            output = getattr(check, 'output', '')[:50] if check else ''
+            
             return (
-                data.get("entity", {}).get("metadata", {}).get("name", "N/A"),
-                data.get("check", {}).get("metadata", {}).get("name", "N/A"),
-                str(data.get("check", {}).get("status", "N/A")),
-                data.get("check", {}).get("output", "")[:50],  # Truncate output
+                entity_name,
+                check_name,
+                status,
+                output,
                 resource.connection_name
             )
         elif self.resource_type == "entities":
-            subs = data.get("subscriptions", [])
+            # Entity objects have metadata and subscriptions attributes
+            metadata = getattr(data, 'metadata', None)
+            name = getattr(metadata, 'name', 'N/A') if metadata else 'N/A'
+            entity_class = getattr(data, 'entity_class', 'N/A')
+            subs = getattr(data, 'subscriptions', [])
+            
             return (
-                data.get("metadata", {}).get("name", "N/A"),
-                data.get("entity_class", "N/A"),
+                name,
+                entity_class,
                 ", ".join(subs[:3]) if subs else "None",
                 resource.connection_name
             )
         elif self.resource_type == "silences":
+            # Silence objects have metadata, reason, and expire attributes
+            metadata = getattr(data, 'metadata', None)
+            name = getattr(metadata, 'name', 'N/A') if metadata else 'N/A'
+            reason = getattr(data, 'reason', 'N/A')
+            expire = str(getattr(data, 'expire', 'N/A'))
+            
             return (
-                data.get("metadata", {}).get("name", "N/A"),
-                data.get("reason", "N/A"),
-                str(data.get("expire", "N/A")),
+                name,
+                reason,
+                expire,
                 resource.connection_name
             )
         elif self.resource_type == "checks":
+            # Check objects have metadata, command, and interval attributes
+            metadata = getattr(data, 'metadata', None)
+            name = getattr(metadata, 'name', 'N/A') if metadata else 'N/A'
+            command = getattr(data, 'command', 'N/A')[:30]
+            interval = str(getattr(data, 'interval', 'N/A'))
+            
             return (
-                data.get("metadata", {}).get("name", "N/A"),
-                data.get("command", "N/A")[:30],
-                str(data.get("interval", "N/A")),
+                name,
+                command,
+                interval,
                 resource.connection_name
             )
         else:
+            # Generic fallback
+            metadata = getattr(data, 'metadata', None)
+            name = getattr(metadata, 'name', str(data)) if metadata else str(data)
+            
             return (
-                str(data.get("metadata", {}).get("name", data)),
+                name,
                 self.resource_type,
                 resource.connection_name
             )

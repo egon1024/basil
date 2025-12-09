@@ -3,6 +3,7 @@ from textual.widgets import Static
 from textual.containers import Vertical, ScrollableContainer
 from basil.client import SensuResource
 import json
+from dataclasses import asdict, is_dataclass
 
 
 class ResourceDetailWidget(ScrollableContainer):
@@ -51,7 +52,18 @@ class ResourceDetailWidget(ScrollableContainer):
         
         # Show formatted data
         lines.append("[bold]Resource Data:[/bold]")
-        formatted_data = json.dumps(resource.data, indent=2)
+        
+        # Convert fawlty dataclass to dict for JSON serialization
+        try:
+            if is_dataclass(resource.data):
+                data_dict = asdict(resource.data)
+            else:
+                data_dict = resource.data
+            formatted_data = json.dumps(data_dict, indent=2, default=str)
+        except Exception as e:
+            # Fallback to string representation
+            formatted_data = str(resource.data)
+        
         lines.append(formatted_data)
         
         content.update("\n".join(lines))

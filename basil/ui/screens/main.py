@@ -20,16 +20,16 @@ class MainScreen(Screen):
     ]
     
     CSS = """
-    .split-view {
-        height: 100%;
+    Horizontal.split-view {
+        height: 1fr;
     }
     
     .list-pane {
-        width: 60%;
+        width: 3fr;
     }
     
     .detail-pane {
-        width: 40%;
+        width: 2fr;
     }
     """
     

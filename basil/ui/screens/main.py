@@ -1,7 +1,7 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Header, Footer, TabbedContent, TabPane, Static, DataTable
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, Container
 from textual.binding import Binding
 from textual.message import Message
 from basil.ui.widgets.resource_list import ResourceListWidget
@@ -28,26 +28,32 @@ class MainScreen(Screen):
     """
     Main screen with tabbed interface for viewing Sensu resources.
     """
-    
+
+    # Track the current split ratio (0-100, represents percentage for left panel)
+    split_ratio = 60  # Default: 60% left, 40% right
+
     BINDINGS = [
         Binding("e", "switch_tab('events')", "Events", show=True, priority=True),
         Binding("n", "switch_tab('entities')", "Entities", show=True, priority=True),
         Binding("s", "switch_tab('silences')", "Silences", show=True, priority=True),
         Binding("c", "switch_tab('connections')", "Connections", show=True, priority=True),
         Binding("r", "refresh_data", "Refresh", show=True, priority=True),
+        Binding("[", "resize_panels('shrink')", "Shrink Left", show=False, priority=True),
+        Binding("]", "resize_panels('grow')", "Grow Left", show=False, priority=True),
     ]
     
     CSS = """
     Horizontal.split-view {
         height: 1fr;
     }
-    
+
     .list-pane {
-        width: 3fr;
+        width: 60%;
+        border-right: solid $primary;
     }
-    
+
     .detail-pane {
-        width: 2fr;
+        width: 40%;
     }
     """
     
@@ -60,24 +66,32 @@ class MainScreen(Screen):
         with CustomTabbedContent(initial="events"):
             with TabPane("Events", id="events"):
                 with Horizontal(classes="split-view"):
-                    yield ResourceListWidget("events", id="events-list", classes="list-pane")
-                    yield ResourceDetailWidget(id="events-detail", classes="detail-pane")
-            
+                    with Container(classes="list-pane"):
+                        yield ResourceListWidget("events", id="events-list")
+                    with Container(classes="detail-pane"):
+                        yield ResourceDetailWidget(id="events-detail")
+
             with TabPane("Entities", id="entities"):
                 with Horizontal(classes="split-view"):
-                    yield ResourceListWidget("entities", id="entities-list", classes="list-pane")
-                    yield ResourceDetailWidget(id="entities-detail", classes="detail-pane")
-            
+                    with Container(classes="list-pane"):
+                        yield ResourceListWidget("entities", id="entities-list")
+                    with Container(classes="detail-pane"):
+                        yield ResourceDetailWidget(id="entities-detail")
+
             with TabPane("Silences", id="silences"):
                 with Horizontal(classes="split-view"):
-                    yield ResourceListWidget("silences", id="silences-list", classes="list-pane")
-                    yield ResourceDetailWidget(id="silences-detail", classes="detail-pane")
-            
+                    with Container(classes="list-pane"):
+                        yield ResourceListWidget("silences", id="silences-list")
+                    with Container(classes="detail-pane"):
+                        yield ResourceDetailWidget(id="silences-detail")
+
             with TabPane("Checks", id="checks"):
                 with Horizontal(classes="split-view"):
-                    yield ResourceListWidget("checks", id="checks-list", classes="list-pane")
-                    yield ResourceDetailWidget(id="checks-detail", classes="detail-pane")
-            
+                    with Container(classes="list-pane"):
+                        yield ResourceListWidget("checks", id="checks-list")
+                    with Container(classes="detail-pane"):
+                        yield ResourceDetailWidget(id="checks-detail")
+
             with TabPane("Connections", id="connections"):
                 yield Static("Connections view - showing active connections", id="connections-content")
         
@@ -160,3 +174,28 @@ class MainScreen(Screen):
         """
         self.load_all_data()
         self.notify("Data refreshed")
+
+    def action_resize_panels(self, direction: str) -> None:
+        """
+        Resize the split panels.
+
+        Args:
+            direction: Either 'grow' to increase left panel or 'shrink' to decrease it
+        """
+        # Adjust ratio by 5% increments
+        if direction == 'grow':
+            self.split_ratio = min(90, self.split_ratio + 5)
+        elif direction == 'shrink':
+            self.split_ratio = max(10, self.split_ratio - 5)
+
+        # Update styles for all list and detail panes
+        list_panes = self.query(".list-pane")
+        detail_panes = self.query(".detail-pane")
+
+        for pane in list_panes:
+            pane.styles.width = f"{self.split_ratio}%"
+
+        for pane in detail_panes:
+            pane.styles.width = f"{100 - self.split_ratio}%"
+
+        self.notify(f"Panel ratio: {self.split_ratio}% / {100 - self.split_ratio}%")

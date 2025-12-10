@@ -2,6 +2,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.containers import Container, Vertical, ScrollableContainer
 from textual.widgets import Input, Button, Static, Label
+from textual.binding import Binding
 from pathlib import Path
 from basil.ui.widgets.server_config import ServerConfigWidget
 
@@ -11,6 +12,10 @@ class ConfigCreateScreen(Screen):
     Screen for creating a new encrypted config file.
     Multi-step process: password confirmation → server setup → save
     """
+    
+    BINDINGS = [
+        Binding("ctrl+q", "quit", "Quit", show=True),
+    ]
     
     CSS = """
     ConfigCreateScreen {
@@ -185,26 +190,37 @@ class ConfigCreateScreen(Screen):
         try:
             from basil.config_writer import save_encrypted_config
             from basil.client import ConnectionManager
+            from basil.profile_manager import ProfileManager
             
             # Build config structure
             config = {
                 "connections": [self.server_config]
             }
             
+            # Get profile from app
+            profile = self.app.current_profile
+            config_path = Path(profile.path).expanduser()
+            
             # Save encrypted config
             save_encrypted_config(
                 config,
                 self.app.new_config_password,
-                self.app.new_config_path
+                config_path
             )
+            
+            # Update profile's last used timestamp
+            profile_manager = ProfileManager()
+            profile_manager.update_last_used(profile.name)
             
             # Load the config and switch to main screen
             connection_manager = ConnectionManager(config)
             self.app.connection_manager = connection_manager
             
             # Clear temporary data
-            delattr(self.app, 'new_config_path')
-            delattr(self.app, 'new_config_password')
+            if hasattr(self.app, 'new_config_password'):
+                delattr(self.app, 'new_config_password')
+            if hasattr(self.app, 'current_profile'):
+                delattr(self.app, 'current_profile')
             
             # Switch to main screen
             self.app.push_screen("main")
@@ -212,3 +228,9 @@ class ConfigCreateScreen(Screen):
         except Exception as e:
             error_display = self.query_one("#error-message-step2", Static)
             error_display.update(f"Failed to save config: {e}")
+    
+    def action_quit(self) -> None:
+        """
+        Exit the application.
+        """
+        self.app.exit()

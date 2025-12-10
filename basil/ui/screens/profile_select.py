@@ -109,6 +109,10 @@ class ProfileSelectScreen(Screen):
         Load profiles when screen is mounted.
         """
         self._load_profiles()
+
+        # Set focus to the Load button so pressing Enter will load the profile
+        load_button = self.query_one("#load-button", Button)
+        load_button.focus()
     
     def _load_profiles(self) -> None:
         """

@@ -11,7 +11,7 @@ fawlty = { url = "https://github.com/egon1024/fawlty/releases/download/0.2.0/faw
 PyYAML = "^6.0.2"
 textual = "^1.0.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 [tool.poetry.scripts]
 basil = "basil.main:main"

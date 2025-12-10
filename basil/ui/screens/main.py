@@ -21,8 +21,7 @@ class CustomTabbedContent(TabbedContent):
         if event.key in ('e', 'n', 's', 'c', 'r'):
             # Don't handle these keys, let them bubble up to the Screen
             return
-        # For all other keys, use default TabbedContent behavior
-        super().on_key(event)
+        # For all other keys, let default behavior handle it
 
 
 class MainScreen(Screen):

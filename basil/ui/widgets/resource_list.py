@@ -10,11 +10,11 @@ class ResourceListWidget(DataTable):
     """
     Reusable widget for displaying a list of Sensu resources.
     """
-    
+
     def __init__(self, resource_type: str, *args, **kwargs):
         """
         Initialize the resource list.
-        
+
         Args:
             resource_type: Type of resource (e.g., 'events', 'entities')
         """
@@ -26,6 +26,7 @@ class ResourceListWidget(DataTable):
         self._sort_column = None
         self._sort_reverse = False
         self._initial_sort_applied = False
+        self._entity_check_counts = {}  # Cache for entity check status counts
     
     def on_mount(self) -> None:
         """
@@ -41,7 +42,7 @@ class ResourceListWidget(DataTable):
         if self.resource_type == "events":
             self.add_columns("Entity", "Check", "Status", "Output", "Connection")
         elif self.resource_type == "entities":
-            self.add_columns("Name", "Class", "Subscriptions", "Connection")
+            self.add_columns("Name", "Class", "Checks", "Subscriptions", "Connection")
         elif self.resource_type == "silences":
             self.add_columns("Name", "Reason", "Expire", "Connection")
         elif self.resource_type == "checks":
@@ -50,32 +51,118 @@ class ResourceListWidget(DataTable):
             # Generic columns
             self.add_columns("Name", "Type", "Connection")
     
-    def load_resources(self, resources: List[SensuResource]) -> None:
+    def load_resources(self, resources: List[SensuResource], events: List[SensuResource] = None) -> None:
         """
         Load resources into the table.
+
+        Args:
+            resources: List of resources to display
+            events: Optional list of events (used for entity check counts)
         """
         self.resources = resources
-        
+
+        # Calculate entity check counts if we're displaying entities
+        if self.resource_type == "entities" and events is not None:
+            self._calculate_entity_check_counts(events)
+
         # Apply default sort for events on first load
         if self.resource_type == "events" and not self._initial_sort_applied:
             self._apply_default_event_sort()
             self._initial_sort_applied = True
-        
+
         # Always clear and reset - this ensures consistency
         self.clear(columns=True)
         self._setup_columns()
-        
+
         # Add new rows
         for idx, resource in enumerate(resources):
             row_data = self._extract_row_data(resource)
             row_key = f"row_{idx}"
-            
+
             # Apply styling for events based on status
             if self.resource_type == "events":
                 row_data = self._style_event_row_data(resource, row_data)
-            
+
             self.add_row(*row_data, key=row_key)
-    
+
+    def _calculate_entity_check_counts(self, events: List[SensuResource]) -> None:
+        """
+        Calculate check status counts for each entity from events.
+
+        Args:
+            events: List of event resources
+        """
+        self._entity_check_counts = {}
+
+        for event in events:
+            data = event.data
+            # Get entity name from event
+            entity_name = getattr(getattr(data, 'entity', None), 'metadata', None)
+            entity_name = getattr(entity_name, 'name', None) if entity_name else None
+
+            if not entity_name:
+                continue
+
+            # Create a key combining entity name and connection
+            entity_key = (entity_name, event.connection_name)
+
+            # Initialize counts if not present
+            if entity_key not in self._entity_check_counts:
+                self._entity_check_counts[entity_key] = {"ok": 0, "warning": 0, "critical": 0}
+
+            # Get check status
+            check = getattr(data, 'check', None)
+            if check:
+                status = getattr(check, 'status', None)
+                if status == 0:
+                    self._entity_check_counts[entity_key]["ok"] += 1
+                elif status == 1:
+                    self._entity_check_counts[entity_key]["warning"] += 1
+                elif status == 2:
+                    self._entity_check_counts[entity_key]["critical"] += 1
+
+    def _format_check_counts(self, counts: dict) -> Text:
+        """
+        Format check counts with colors matching event row styling.
+
+        Args:
+            counts: Dictionary with 'ok', 'warning', and 'critical' counts
+
+        Returns:
+            Rich Text object with colored counts
+        """
+        ok_count = counts.get("ok", 0)
+        warn_count = counts.get("warning", 0)
+        crit_count = counts.get("critical", 0)
+
+        # Build the text with colors similar to event rows
+        parts = []
+        if ok_count > 0:
+            parts.append(Text(str(ok_count), style="white on dark_green"))
+        else:
+            parts.append(Text(str(ok_count), style="dim"))
+
+        parts.append(Text("/", style="dim"))
+
+        if warn_count > 0:
+            parts.append(Text(str(warn_count), style="black on yellow"))
+        else:
+            parts.append(Text(str(warn_count), style="dim"))
+
+        parts.append(Text("/", style="dim"))
+
+        if crit_count > 0:
+            parts.append(Text(str(crit_count), style="white on dark_red"))
+        else:
+            parts.append(Text(str(crit_count), style="dim"))
+
+        # Combine all parts into a single Text object
+        result = Text()
+        for part in parts:
+            result.append_text(part)
+
+        return result
+
     def _extract_row_data(self, resource: SensuResource) -> tuple:
         """
         Extract row data from a resource based on type.
@@ -107,10 +194,18 @@ class ResourceListWidget(DataTable):
             name = getattr(metadata, 'name', 'N/A') if metadata else 'N/A'
             entity_class = getattr(data, 'entity_class', 'N/A')
             subs = getattr(data, 'subscriptions', [])
-            
+
+            # Get check counts for this entity
+            entity_key = (name, resource.connection_name)
+            counts = self._entity_check_counts.get(entity_key, {"ok": 0, "warning": 0, "critical": 0})
+
+            # Format check counts with colors
+            check_counts = self._format_check_counts(counts)
+
             return (
                 name,
                 entity_class,
+                check_counts,
                 ", ".join(subs[:3]) if subs else "None",
                 resource.connection_name
             )

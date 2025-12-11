@@ -108,25 +108,29 @@ class MainScreen(Screen):
         Load data for all resource types.
         """
         connection_manager = self.app.connection_manager
-        
+
         if not connection_manager:
             return
-        
-        # Load events
+
+        # Load events first (needed for entity check counts and detail view)
         events_list = self.query_one("#events-list", ResourceListWidget)
         events = connection_manager.get_all("events")
         events_list.load_resources(events)
-        
-        # Load entities
+
+        # Load entities and pass events for check counts
         entities_list = self.query_one("#entities-list", ResourceListWidget)
         entities = connection_manager.get_all("entities")
-        entities_list.load_resources(entities)
-        
+        entities_list.load_resources(entities, events=events)
+
+        # Set events in entity detail widget for check grouping
+        entities_detail = self.query_one("#entities-detail", ResourceDetailWidget)
+        entities_detail.set_events(events)
+
         # Load silences
         silences_list = self.query_one("#silences-list", ResourceListWidget)
         silences = connection_manager.get_all("silenced")
         silences_list.load_resources(silences)
-        
+
         # Load checks
         checks_list = self.query_one("#checks-list", ResourceListWidget)
         checks = connection_manager.get_all("checks")

@@ -4,8 +4,12 @@ from textual.widgets import Header, Footer, TabbedContent, TabPane, Static, Data
 from textual.containers import Horizontal, Vertical, Container
 from textual.binding import Binding
 from textual.message import Message
-from basil.ui.widgets.resource_list import ResourceListWidget
-from basil.ui.widgets.resource_detail import ResourceDetailWidget
+from basil.ui.widgets.base_resource_list import BaseResourceListWidget
+from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
+from basil.ui.widgets.events import EventListWidget, EventDetailWidget
+from basil.ui.widgets.entities import EntityListWidget, EntityDetailWidget
+from basil.ui.widgets.silences import SilenceListWidget, SilenceDetailWidget
+from basil.ui.widgets.checks import CheckListWidget, CheckDetailWidget
 
 
 class CustomTabbedContent(TabbedContent):
@@ -67,30 +71,30 @@ class MainScreen(Screen):
             with TabPane("Events", id="events"):
                 with Horizontal(classes="split-view"):
                     with Container(classes="list-pane"):
-                        yield ResourceListWidget("events", id="events-list")
+                        yield EventListWidget(id="events-list")
                     with Container(classes="detail-pane"):
-                        yield ResourceDetailWidget(id="events-detail")
+                        yield EventDetailWidget(id="events-detail")
 
             with TabPane("Entities", id="entities"):
                 with Horizontal(classes="split-view"):
                     with Container(classes="list-pane"):
-                        yield ResourceListWidget("entities", id="entities-list")
+                        yield EntityListWidget(id="entities-list")
                     with Container(classes="detail-pane"):
-                        yield ResourceDetailWidget(id="entities-detail")
+                        yield EntityDetailWidget(id="entities-detail")
 
             with TabPane("Silences", id="silences"):
                 with Horizontal(classes="split-view"):
                     with Container(classes="list-pane"):
-                        yield ResourceListWidget("silences", id="silences-list")
+                        yield SilenceListWidget(id="silences-list")
                     with Container(classes="detail-pane"):
-                        yield ResourceDetailWidget(id="silences-detail")
+                        yield SilenceDetailWidget(id="silences-detail")
 
             with TabPane("Checks", id="checks"):
                 with Horizontal(classes="split-view"):
                     with Container(classes="list-pane"):
-                        yield ResourceListWidget("checks", id="checks-list")
+                        yield CheckListWidget(id="checks-list")
                     with Container(classes="detail-pane"):
-                        yield ResourceDetailWidget(id="checks-detail")
+                        yield CheckDetailWidget(id="checks-detail")
 
             with TabPane("Connections", id="connections"):
                 yield Static("Connections view - showing active connections", id="connections-content")
@@ -113,26 +117,26 @@ class MainScreen(Screen):
             return
 
         # Load events first (needed for entity check counts and detail view)
-        events_list = self.query_one("#events-list", ResourceListWidget)
+        events_list = self.query_one("#events-list", EventListWidget)
         events = connection_manager.get_all("events")
         events_list.load_resources(events)
 
         # Load entities and pass events for check counts
-        entities_list = self.query_one("#entities-list", ResourceListWidget)
+        entities_list = self.query_one("#entities-list", EntityListWidget)
         entities = connection_manager.get_all("entities")
         entities_list.load_resources(entities, events=events)
 
         # Set events in entity detail widget for check grouping
-        entities_detail = self.query_one("#entities-detail", ResourceDetailWidget)
+        entities_detail = self.query_one("#entities-detail", EntityDetailWidget)
         entities_detail.set_events(events)
 
         # Load silences
-        silences_list = self.query_one("#silences-list", ResourceListWidget)
+        silences_list = self.query_one("#silences-list", SilenceListWidget)
         silences = connection_manager.get_all("silenced")
         silences_list.load_resources(silences)
 
         # Load checks
-        checks_list = self.query_one("#checks-list", ResourceListWidget)
+        checks_list = self.query_one("#checks-list", CheckListWidget)
         checks = connection_manager.get_all("checks")
         checks_list.load_resources(checks)
     
@@ -142,26 +146,28 @@ class MainScreen(Screen):
         """
         # Find which list triggered this
         list_widget = event.data_table
-        
-        if not isinstance(list_widget, ResourceListWidget):
+
+        if not isinstance(list_widget, BaseResourceListWidget):
             return
-        
+
         # Get the selected resource
         resource = list_widget.get_selected_resource()
-        
+
         if not resource:
             return
-        
-        # Find the corresponding detail widget
-        resource_type = list_widget.resource_type
-        detail_id = f"{resource_type}-detail"
-        
-        try:
-            detail_widget = self.query_one(f"#{detail_id}", ResourceDetailWidget)
-            detail_widget.show_resource(resource)
-        except Exception:
-            # Connections tab doesn't have a detail widget
-            pass
+
+        # Find the corresponding detail widget using ID convention
+        # "events-list" -> "events-detail"
+        list_id = list_widget.id
+        if list_id and list_id.endswith("-list"):
+            detail_id = list_id.replace("-list", "-detail")
+
+            try:
+                detail_widget = self.query_one(f"#{detail_id}", BaseResourceDetailWidget)
+                detail_widget.show_resource(resource)
+            except Exception:
+                # Tab doesn't have a detail widget
+                pass
     
 
     

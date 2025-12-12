@@ -142,11 +142,14 @@ class ConfigLoadScreen(Screen):
             
             # Store in app and switch to main screen
             self.app.connection_manager = connection_manager
-            
+            self.app.config = config
+            self.app.config_password = password
+            self.app.config_path = config_path
+
             # Clean up profile reference
             if hasattr(self.app, 'current_profile'):
                 delattr(self.app, 'current_profile')
-            
+
             self.app.push_screen("main")
             
         except FileNotFoundError as e:

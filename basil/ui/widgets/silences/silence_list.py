@@ -26,7 +26,8 @@ class SilenceListWidget(BaseResourceListWidget):
         metadata = getattr(data, 'metadata', None)
         name = getattr(metadata, 'name', 'N/A') if metadata else 'N/A'
         reason = getattr(data, 'reason', 'N/A')
-        expire = str(getattr(data, 'expire', 'N/A'))
+        expire_value = getattr(data, 'expire', 'N/A')
+        expire = 'Never' if expire_value == -1 else str(expire_value)
 
         return (
             name,

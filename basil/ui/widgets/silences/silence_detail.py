@@ -37,7 +37,9 @@ class SilenceDetailWidget(BaseResourceDetailWidget):
 
         expire = getattr(data, 'expire', None)
         if expire:
-            if isinstance(expire, int):
+            if expire == -1:
+                lines.append(f"  Expires: Never")
+            elif isinstance(expire, int):
                 lines.append(f"  Expires: {self.format_timestamp(expire)}")
             else:
                 lines.append(f"  Expires: {expire}")

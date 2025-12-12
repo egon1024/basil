@@ -114,47 +114,62 @@ class ConnectionManager:
         """
         return list(self._connections.values())
 
-    def get_all(self, resource_type: str) -> List[SensuResource]:
+    def get_all(self, resource_type: str) -> Optional[List[SensuResource]]:
         """
         Fetch all items of a given resource type from all connections.
-        
+
         Args:
             resource_type: The resource type (e.g., 'entities', 'events', 'silenced', 'checks')
-        
+
         Returns:
             List of SensuResource instances, each wrapping the original data
-            with connection metadata accessible via .connection and .connection_name
+            with connection metadata accessible via .connection and .connection_name.
+            Returns None if all connections failed (to distinguish from empty but successful result).
         """
         # Map resource types to fawlty resource classes
         from fawlty.resources.entity import Entity
         from fawlty.resources.event import Event
         from fawlty.resources.check import Check
         from fawlty.resources.silence import Silence
-        
+
         resource_map = {
             'entities': Entity,
             'events': Event,
             'checks': Check,
             'silenced': Silence,
         }
-        
+
         resource_class = resource_map.get(resource_type)
         if not resource_class:
             # Unknown resource type
             return []
-        
+
         all_items = []
+        success_count = 0
+        error_count = 0
+        errors = []
+
         for conn in self._connections.values():
             try:
                 # Call Resource.get(client=..., namespace=...)
                 items = resource_class.get(client=conn.client, namespace=conn.namespace)
-                
+
                 # Wrap each item with connection metadata
                 for item in items:
                     all_items.append(SensuResource(data=item, connection=conn))
+
+                success_count += 1
             except Exception as e:
-                # Log error but continue with other connections
-                print(f"Error fetching {resource_type} from {conn.name}: {e}")
+                # Track error but continue with other connections
+                error_count += 1
+                errors.append(f"{conn.name}: {e}")
                 continue
-        
+
+        # If all connections failed, return None to indicate total failure
+        if success_count == 0 and error_count > 0:
+            # Log errors for debugging
+            for error in errors:
+                print(f"Error fetching {resource_type}: {error}")
+            return None
+
         return all_items

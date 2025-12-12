@@ -16,21 +16,25 @@ class ServerConfigWidget(Widget):
         padding: 1;
         height: auto;
     }
-    
+
+    ServerConfigWidget Vertical {
+        height: auto;
+    }
+
     .input-label {
         margin-top: 1;
         margin-bottom: 0;
     }
-    
+
     Input, Select {
         margin-bottom: 1;
     }
-    
+
     #test-button {
         width: 100%;
         margin-top: 1;
     }
-    
+
     #test-status {
         text-align: center;
         margin-top: 1;

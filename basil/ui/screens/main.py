@@ -10,16 +10,12 @@ from basil.ui.widgets.events import EventListWidget, EventDetailWidget
 from basil.ui.widgets.entities import EntityListWidget, EntityDetailWidget
 from basil.ui.widgets.silences import SilenceListWidget, SilenceDetailWidget
 from basil.ui.widgets.checks import CheckListWidget, CheckDetailWidget
+from basil.ui.widgets.connections import ConnectionListWidget, ConnectionDetailWidget
 
 
 class CustomTabbedContent(TabbedContent):
     """TabbedContent that doesn't consume our custom key bindings."""
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Disable automatic tab switching when focus changes
-        self.can_focus_children = False
-    
+
     def on_key(self, event) -> None:
         """Override to not handle e, n, s, c, r keys - let them bubble to Screen."""
         if event.key in ('e', 'n', 's', 'c', 'r'):
@@ -97,7 +93,11 @@ class MainScreen(Screen):
                         yield CheckDetailWidget(id="checks-detail")
 
             with TabPane("Connections", id="connections"):
-                yield Static("Connections view - showing active connections", id="connections-content")
+                with Horizontal(classes="split-view"):
+                    with Container(classes="list-pane"):
+                        yield ConnectionListWidget(id="connections-list")
+                    with Container(classes="detail-pane"):
+                        yield ConnectionDetailWidget(id="connections-detail")
         
         yield Footer()
     
@@ -106,6 +106,7 @@ class MainScreen(Screen):
         Load initial data when screen is mounted.
         """
         self.load_all_data()
+        self.load_connections()
     
     def load_all_data(self) -> None:
         """
@@ -116,29 +117,50 @@ class MainScreen(Screen):
         if not connection_manager:
             return
 
-        # Load events first (needed for entity check counts and detail view)
-        events_list = self.query_one("#events-list", EventListWidget)
-        events = connection_manager.get_all("events")
-        events_list.load_resources(events)
+        any_failures = False
 
-        # Load entities and pass events for check counts
-        entities_list = self.query_one("#entities-list", EntityListWidget)
-        entities = connection_manager.get_all("entities")
-        entities_list.load_resources(entities, events=events)
+        try:
+            # Load events first (needed for entity check counts and detail view)
+            events_list = self.query_one("#events-list", EventListWidget)
+            events = connection_manager.get_all("events")
+            if events is not None:  # Only update if fetch succeeded
+                events_list.load_resources(events)
+            else:
+                any_failures = True
 
-        # Set events in entity detail widget for check grouping
-        entities_detail = self.query_one("#entities-detail", EntityDetailWidget)
-        entities_detail.set_events(events)
+            # Load entities and pass events for check counts
+            entities_list = self.query_one("#entities-list", EntityListWidget)
+            entities = connection_manager.get_all("entities")
+            if entities is not None:
+                entities_list.load_resources(entities, events=events if events is not None else [])
 
-        # Load silences
-        silences_list = self.query_one("#silences-list", SilenceListWidget)
-        silences = connection_manager.get_all("silenced")
-        silences_list.load_resources(silences)
+                # Set events in entity detail widget for check grouping
+                entities_detail = self.query_one("#entities-detail", EntityDetailWidget)
+                entities_detail.set_events(events if events is not None else [])
+            else:
+                any_failures = True
 
-        # Load checks
-        checks_list = self.query_one("#checks-list", CheckListWidget)
-        checks = connection_manager.get_all("checks")
-        checks_list.load_resources(checks)
+            # Load silences
+            silences_list = self.query_one("#silences-list", SilenceListWidget)
+            silences = connection_manager.get_all("silenced")
+            if silences is not None:
+                silences_list.load_resources(silences)
+            else:
+                any_failures = True
+
+            # Load checks
+            checks_list = self.query_one("#checks-list", CheckListWidget)
+            checks = connection_manager.get_all("checks")
+            if checks is not None:
+                checks_list.load_resources(checks)
+            else:
+                any_failures = True
+
+            if any_failures:
+                self.notify("Some resources failed to load", severity="warning")
+
+        except Exception as e:
+            self.notify(f"Error loading data: {e}", severity="error")
     
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """
@@ -182,6 +204,11 @@ class MainScreen(Screen):
         """
         Refresh all data from connections.
         """
+        # Clear all detail panels before refreshing
+        detail_widgets = self.query(BaseResourceDetailWidget)
+        for detail_widget in detail_widgets:
+            detail_widget.clear()
+
         self.load_all_data()
         self.notify("Data refreshed")
 
@@ -209,3 +236,141 @@ class MainScreen(Screen):
             pane.styles.width = f"{100 - self.split_ratio}%"
 
         self.notify(f"Panel ratio: {self.split_ratio}% / {100 - self.split_ratio}%")
+
+    def load_connections(self) -> None:
+        """Load connections from the current config into the connections list."""
+        if not hasattr(self.app, 'config') or not self.app.config:
+            return
+
+        connections = self.app.config.get("connections", [])
+        connections_list = self.query_one("#connections-list", ConnectionListWidget)
+        connections_list.load_connections(connections)
+
+    def on_connection_list_widget_connection_selected(
+        self, event: ConnectionListWidget.ConnectionSelected
+    ) -> None:
+        """
+        Handle connection selection in the list.
+
+        Args:
+            event: The connection selection event
+        """
+        connections_detail = self.query_one("#connections-detail", ConnectionDetailWidget)
+        connections_detail.show_connection(event.connection)
+
+    def on_connection_detail_widget_connection_saved(
+        self, event: ConnectionDetailWidget.ConnectionSaved
+    ) -> None:
+        """
+        Handle connection save event.
+
+        Args:
+            event: The connection saved event
+        """
+        if not hasattr(self.app, 'config') or not self.app.config:
+            self.notify("Configuration not loaded", severity="error")
+            return
+
+        connections = self.app.config.get("connections", [])
+
+        if event.is_new:
+            # Add new connection
+            # Check for duplicate names
+            if any(c.get("name") == event.connection.get("name") for c in connections):
+                self.notify(f"Connection '{event.connection.get('name')}' already exists", severity="error")
+                return
+
+            connections.append(event.connection)
+            self.notify(f"Connection '{event.connection.get('name')}' created successfully", severity="information")
+        else:
+            # Update existing connection
+            for i, conn in enumerate(connections):
+                if conn.get("name") == event.connection.get("name"):
+                    connections[i] = event.connection
+                    break
+
+            self.notify(f"Connection '{event.connection.get('name')}' updated successfully", severity="information")
+
+        # Save updated config
+        self._save_config()
+
+        # Reload connection manager with updated config
+        self._reload_connection_manager()
+
+        # Reload connections list and clear detail
+        self.load_connections()
+        connections_detail = self.query_one("#connections-detail", ConnectionDetailWidget)
+        connections_detail.clear()
+
+    def on_connection_detail_widget_connection_deleted(
+        self, event: ConnectionDetailWidget.ConnectionDeleted
+    ) -> None:
+        """
+        Handle connection delete event.
+
+        Args:
+            event: The connection deleted event
+        """
+        if not hasattr(self.app, 'config') or not self.app.config:
+            self.notify("Configuration not loaded", severity="error")
+            return
+
+        connections = self.app.config.get("connections", [])
+
+        # Remove the connection
+        original_count = len(connections)
+        connections[:] = [c for c in connections if c.get("name") != event.connection_name]
+
+        if len(connections) < original_count:
+            self.notify(f"Connection '{event.connection_name}' deleted successfully", severity="information")
+
+            # Save updated config
+            self._save_config()
+
+            # Reload connection manager with updated config
+            self._reload_connection_manager()
+
+            # Reload connections list and clear detail
+            self.load_connections()
+            connections_detail = self.query_one("#connections-detail", ConnectionDetailWidget)
+            connections_detail.clear()
+        else:
+            self.notify(f"Connection '{event.connection_name}' not found", severity="warning")
+
+    def _save_config(self) -> None:
+        """Save the current configuration to disk."""
+        from basil.config_writer import save_encrypted_config
+
+        if not hasattr(self.app, 'config') or not self.app.config:
+            self.notify("Configuration not loaded", severity="error")
+            return
+
+        if not hasattr(self.app, 'config_password') or not self.app.config_password:
+            self.notify("Configuration password not available", severity="error")
+            return
+
+        if not hasattr(self.app, 'config_path') or not self.app.config_path:
+            self.notify("Configuration path not available", severity="error")
+            return
+
+        try:
+            save_encrypted_config(
+                self.app.config,
+                self.app.config_password,
+                self.app.config_path
+            )
+        except Exception as e:
+            self.notify(f"Error saving configuration: {e}", severity="error")
+
+    def _reload_connection_manager(self) -> None:
+        """Reload the connection manager with the current configuration."""
+        from basil.client import ConnectionManager
+
+        if not hasattr(self.app, 'config') or not self.app.config:
+            return
+
+        try:
+            # Create a new connection manager with the updated config
+            self.app.connection_manager = ConnectionManager(self.app.config)
+        except Exception as e:
+            self.notify(f"Error reloading connections: {e}", severity="error")

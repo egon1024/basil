@@ -215,13 +215,16 @@ class ConfigCreateScreen(Screen):
             # Load the config and switch to main screen
             connection_manager = ConnectionManager(config)
             self.app.connection_manager = connection_manager
-            
+            self.app.config = config
+            self.app.config_password = self.app.new_config_password
+            self.app.config_path = config_path
+
             # Clear temporary data
             if hasattr(self.app, 'new_config_password'):
                 delattr(self.app, 'new_config_password')
             if hasattr(self.app, 'current_profile'):
                 delattr(self.app, 'current_profile')
-            
+
             # Switch to main screen
             self.app.push_screen("main")
             

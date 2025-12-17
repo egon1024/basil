@@ -10,14 +10,14 @@ class BasilApp(App):
     """
     Main Basil application.
     """
-    
+
     TITLE = "Basil - Sensu Terminal Client"
     CSS_PATH = "app.css"
-    
+
     BINDINGS = [
         Binding("q", "quit", "Quit", show=True),
     ]
-    
+
     def __init__(self):
         super().__init__()
         self.connection_manager = None

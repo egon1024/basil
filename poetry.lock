@@ -305,13 +305,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fawlty"
-version = "0.2.0"
+version = "0.3.0"
 description = "A Python library for interacting with a SensuGo server"
 optional = false
 python-versions = ">=3.9.0,<4.0.0"
 groups = ["main"]
 files = [
-    {file = "fawlty-0.2.0-py3-none-any.whl", hash = "sha256:389d45911b9fec28efa4c873b4e713ff1a0d978c6515685229f8e967705f8e8d"},
+    {file = "fawlty-0.3.0-py3-none-any.whl", hash = "sha256:27b966c70f594085dc552a2be125df0afa6ae8ff76c14c199d28ade52bf0fab7"},
 ]
 
 [package.dependencies]
@@ -325,7 +325,7 @@ requests = ">=2.32.3,<3.0.0"
 
 [package.source]
 type = "url"
-url = "https://github.com/egon1024/fawlty/releases/download/0.2.0/fawlty-0.2.0-py3-none-any.whl"
+url = "https://github.com/egon1024/fawlty/releases/download/0.3.0/fawlty-0.3.0-py3-none-any.whl"
 
 [[package]]
 name = "flake8"
@@ -998,4 +998,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9.0"
-content-hash = "df591b1cac361242ba173b2197b786cbcb1dcced76953fe0dbaf013180af79d4"
+content-hash = "c37fe6557dfdc48ea8272faa9f9a7b170c23abbc900a1317de8759e99bf8968b"

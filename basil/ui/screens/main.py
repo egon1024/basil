@@ -17,8 +17,8 @@ class CustomTabbedContent(TabbedContent):
     """TabbedContent that doesn't consume our custom key bindings."""
 
     def on_key(self, event) -> None:
-        """Override to not handle e, n, s, c, r keys - let them bubble to Screen."""
-        if event.key in ('e', 'n', 's', 'c', 'r'):
+        """Override to not handle e, n, s, k, c, r keys - let them bubble to Screen."""
+        if event.key in ('e', 'n', 's', 'k', 'c', 'r'):
             # Don't handle these keys, let them bubble up to the Screen
             return
         # For all other keys, let default behavior handle it
@@ -36,6 +36,7 @@ class MainScreen(Screen):
         Binding("e", "switch_tab('events')", "Events", show=True, priority=True),
         Binding("n", "switch_tab('entities')", "Entities", show=True, priority=True),
         Binding("s", "switch_tab('silences')", "Silences", show=True, priority=True),
+        Binding("k", "switch_tab('checks')", "Checks", show=True, priority=True),
         Binding("c", "switch_tab('connections')", "Connections", show=True, priority=True),
         Binding("r", "refresh_data", "Refresh", show=True, priority=True),
         Binding("[", "resize_panels('shrink')", "Shrink Left", show=False, priority=True),

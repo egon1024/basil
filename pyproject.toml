@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9.0"
-fawlty = { url = "https://github.com/egon1024/fawlty/releases/download/0.2.0/fawlty-0.2.0-py3-none-any.whl" }
+fawlty = { url = "https://github.com/egon1024/fawlty/releases/download/0.3.0/fawlty-0.3.0-py3-none-any.whl" }
 PyYAML = "^6.0.2"
 textual = "^1.0.0"
 

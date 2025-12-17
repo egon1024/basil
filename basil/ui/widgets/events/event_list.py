@@ -9,7 +9,7 @@ class EventListWidget(BaseResourceListWidget):
 
     def setup_columns(self) -> None:
         """Set up columns for event display."""
-        self.add_columns("Entity", "Check", "Status", "Output", "Connection")
+        self.add_columns("Connection", "Entity", "Check", "Status", "Output")
 
     def extract_row_data(self, resource: SensuResource) -> tuple:
         """
@@ -19,7 +19,7 @@ class EventListWidget(BaseResourceListWidget):
             resource: The event resource
 
         Returns:
-            Tuple of (entity_name, check_name, status, output, connection_name)
+            Tuple of (connection_name, entity_name, check_name, status, output)
         """
         data = resource.data
 
@@ -35,11 +35,11 @@ class EventListWidget(BaseResourceListWidget):
         output = getattr(check, 'output', '')[:50] if check else ''
 
         return (
+            resource.connection_name,
             entity_name,
             check_name,
             status,
-            output,
-            resource.connection_name
+            output
         )
 
     def apply_row_styling(self, resource: SensuResource, row_data: tuple) -> tuple:
@@ -98,13 +98,13 @@ class EventListWidget(BaseResourceListWidget):
         """
         def multi_sort_key(resource: SensuResource):
             row_data = self.extract_row_data(resource)
-            # Extract entity (index 0), check (index 1), and status (index 2)
-            entity = str(row_data[0]).lower() if len(row_data) > 0 else ""
-            check = str(row_data[1]).lower() if len(row_data) > 1 else ""
+            # Extract entity (index 1), check (index 2), and status (index 3)
+            entity = str(row_data[1]).lower() if len(row_data) > 1 else ""
+            check = str(row_data[2]).lower() if len(row_data) > 2 else ""
             status = 0
-            if len(row_data) > 2:
+            if len(row_data) > 3:
                 try:
-                    status = int(str(row_data[2]))
+                    status = int(str(row_data[3]))
                 except (ValueError, TypeError):
                     status = 999
             # Return tuple: negative status for descending, entity and check for ascending
@@ -132,7 +132,7 @@ class EventListWidget(BaseResourceListWidget):
             # Convert to string and handle numeric sorting for status
             str_value = str(value)
             # Try to convert to int for numeric columns (like status)
-            if column_index == 2:  # Status column
+            if column_index == 3:  # Status column (now at index 3)
                 try:
                     return int(str_value)
                 except (ValueError, TypeError):

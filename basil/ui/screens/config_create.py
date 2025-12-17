@@ -208,10 +208,6 @@ class ConfigCreateScreen(Screen):
                 config_path
             )
             
-            # Update profile's last used timestamp
-            profile_manager = ProfileManager()
-            profile_manager.update_last_used(profile.name)
-            
             # Load the config and switch to main screen
             connection_manager = ConnectionManager(config)
             self.app.connection_manager = connection_manager

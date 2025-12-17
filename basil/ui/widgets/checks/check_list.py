@@ -8,7 +8,7 @@ class CheckListWidget(BaseResourceListWidget):
 
     def setup_columns(self) -> None:
         """Set up columns for check display."""
-        self.add_columns("Name", "Command", "Interval", "Connection")
+        self.add_columns("Connection", "Name", "Command", "Interval")
 
     def extract_row_data(self, resource: SensuResource) -> tuple:
         """
@@ -18,7 +18,7 @@ class CheckListWidget(BaseResourceListWidget):
             resource: The check resource
 
         Returns:
-            Tuple of (name, command, interval, connection_name)
+            Tuple of (connection_name, name, command, interval)
         """
         data = resource.data
 
@@ -29,10 +29,10 @@ class CheckListWidget(BaseResourceListWidget):
         interval = str(getattr(data, 'interval', 'N/A'))
 
         return (
+            resource.connection_name,
             name,
             command,
-            interval,
-            resource.connection_name
+            interval
         )
 
     def get_sort_key(self, resource: SensuResource, column_index: int) -> Any:
@@ -49,8 +49,8 @@ class CheckListWidget(BaseResourceListWidget):
         row_data = self.extract_row_data(resource)
         if column_index < len(row_data):
             value = row_data[column_index]
-            # Interval column (index 2) should sort numerically
-            if column_index == 2:
+            # Interval column (now at index 3) should sort numerically
+            if column_index == 3:
                 try:
                     return int(str(value))
                 except (ValueError, TypeError):

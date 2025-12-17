@@ -8,7 +8,7 @@ class SilenceListWidget(BaseResourceListWidget):
 
     def setup_columns(self) -> None:
         """Set up columns for silence display."""
-        self.add_columns("Name", "Reason", "Expire", "Connection")
+        self.add_columns("Connection", "Name", "Reason", "Expire")
 
     def extract_row_data(self, resource: SensuResource) -> tuple:
         """
@@ -18,7 +18,7 @@ class SilenceListWidget(BaseResourceListWidget):
             resource: The silence resource
 
         Returns:
-            Tuple of (name, reason, expire, connection_name)
+            Tuple of (connection_name, name, reason, expire)
         """
         data = resource.data
 
@@ -30,10 +30,10 @@ class SilenceListWidget(BaseResourceListWidget):
         expire = 'Never' if expire_value == -1 else str(expire_value)
 
         return (
+            resource.connection_name,
             name,
             reason,
-            expire,
-            resource.connection_name
+            expire
         )
 
     def get_sort_key(self, resource: SensuResource, column_index: int) -> Any:

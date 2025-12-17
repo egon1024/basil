@@ -28,21 +28,21 @@ class SensuConnection:
     Manages a single connection to a Sensu server using fawlty.
     Exposes the fawlty client directly for callers to use.
     """
-    def __init__(self, name: str, url: str, api_key: Optional[str] = None, 
+    def __init__(self, name: str, url: str, api_key: Optional[str] = None,
                  username: Optional[str] = None, password: Optional[str] = None,
                  namespace: str = "default"):
         from fawlty.sensu_server import SensuServer
         from urllib.parse import urlparse
-        
+
         self.name = name
         self.namespace = namespace
-        
+
         # Parse URL to extract host, port, and scheme
         parsed = urlparse(url)
         host = parsed.hostname or url
         port = parsed.port or (443 if parsed.scheme == 'https' else 8080)
         use_ssl = parsed.scheme == 'https'
-        
+
         # Create SensuServer object
         server = SensuServer(
             host=host,
@@ -50,10 +50,10 @@ class SensuConnection:
             use_ssl=use_ssl,
             ignore_cert=False  # TODO: Make this configurable
         )
-        
+
         # Create SensuClient with the server
         self.client = SensuClient(server=server)
-        
+
         # Authenticate
         if api_key:
             # TODO: fawlty doesn't support API key auth yet
@@ -92,7 +92,7 @@ class ConnectionManager:
             name = conn_cfg.get("name")
             if not name:
                 continue # Skip unnamed connections
-            
+
             self._connections[name] = SensuConnection(
                 name=name,
                 url=conn_cfg.get("url"),

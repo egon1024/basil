@@ -14,7 +14,7 @@ class EntityListWidget(BaseResourceListWidget):
 
     def setup_columns(self) -> None:
         """Set up columns for entity display."""
-        self.add_columns("Name", "Class", "Checks", "Subscriptions", "Connection")
+        self.add_columns("Connection", "Name", "Class", "Checks", "Subscriptions")
 
     def preprocess_resources(self, resources: List[SensuResource], **kwargs) -> None:
         """
@@ -116,7 +116,7 @@ class EntityListWidget(BaseResourceListWidget):
             resource: The entity resource
 
         Returns:
-            Tuple of (name, entity_class, check_counts, subscriptions, connection_name)
+            Tuple of (connection_name, name, entity_class, check_counts, subscriptions)
         """
         data = resource.data
 
@@ -134,12 +134,75 @@ class EntityListWidget(BaseResourceListWidget):
         check_counts = self._format_check_counts(counts)
 
         return (
+            resource.connection_name,
             name,
             entity_class,
             check_counts,
-            ", ".join(subs[:3]) if subs else "None",
-            resource.connection_name
+            ", ".join(subs[:3]) if subs else "None"
         )
+
+    def apply_row_styling(self, resource: SensuResource, row_data: tuple) -> tuple:
+        """
+        Apply styling to entity rows based on check status.
+
+        Entities are colored based on their worst check status:
+        - Critical: Any critical checks (red background, white text)
+        - Warning: Any warning checks and no critical (yellow background, black text)
+        - OK: Only OK checks (dark green background, white text)
+        - No checks: No status (dim styling)
+
+        Args:
+            resource: The entity resource
+            row_data: The extracted row data
+
+        Returns:
+            Styled row data with Rich Text objects
+        """
+        data = resource.data
+        metadata = getattr(data, 'metadata', None)
+        name = getattr(metadata, 'name', 'N/A') if metadata else 'N/A'
+
+        # Get check counts for this entity
+        entity_key = (name, resource.connection_name)
+        counts = self._entity_check_counts.get(entity_key, {"ok": 0, "warning": 0, "critical": 0})
+
+        # Determine styling based on worst status
+        if counts.get("critical", 0) > 0:
+            bg_color = "dark_red"
+            fg_color = "white"
+        elif counts.get("warning", 0) > 0:
+            bg_color = "yellow"
+            fg_color = "black"
+        elif counts.get("ok", 0) > 0:
+            bg_color = "dark_green"
+            fg_color = "white"
+        else:
+            # No checks - use dim styling
+            bg_color = None
+            fg_color = "dim"
+
+        # Apply styling to each cell in the row
+        styled_data = []
+        for cell in row_data:
+            # Handle Text objects (like the formatted check counts)
+            if isinstance(cell, Text):
+                # For Text objects, we need to update their style
+                styled_text = Text(cell.plain)
+                if bg_color:
+                    styled_text.stylize(f"{fg_color} on {bg_color}")
+                else:
+                    styled_text.stylize(fg_color)
+                styled_data.append(styled_text)
+            else:
+                # For regular strings
+                text_content = str(cell)
+                padded_text = text_content.ljust(len(text_content) + 1)
+                if bg_color:
+                    styled_data.append(Text(padded_text, style=f"{fg_color} on {bg_color}", no_wrap=False, overflow="ellipsis"))
+                else:
+                    styled_data.append(Text(padded_text, style=fg_color, no_wrap=False, overflow="ellipsis"))
+
+        return tuple(styled_data)
 
     def get_sort_key(self, resource: SensuResource, column_index: int) -> Any:
         """

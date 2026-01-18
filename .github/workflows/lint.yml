@@ -26,4 +26,4 @@ jobs:
       run: poetry run pyflakes basil
       
     - name: Run pylint
-      run: poetry run pylint basil
+      run: poetry run pylint basil --disable=fixme

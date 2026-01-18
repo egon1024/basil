@@ -133,42 +133,19 @@ class MainScreen(Screen):
         try:
             # Load events first (needed for entity check counts and detail view)
             events_list = self.query_one("#events-list", EventListWidget)
-            events = connection_manager.get_all("events")
-            if events is not None:  # Only update if fetch succeeded
-                events_list.load_resources(events)
-            else:
-                any_failures = True
+            events_list.load_resources_parallel(connection_manager, "events")
 
-            # Load entities and pass events for check counts
+            # Load entities
             entities_list = self.query_one("#entities-list", EntityListWidget)
-            entities = connection_manager.get_all("entities")
-            if entities is not None:
-                entities_list.load_resources(entities, events=events if events is not None else [])
-
-                # Set events in entity detail widget for check grouping
-                entities_detail = self.query_one("#entities-detail", EntityDetailWidget)
-                entities_detail.set_events(events if events is not None else [])
-            else:
-                any_failures = True
+            entities_list.load_resources_parallel(connection_manager, "entities")
 
             # Load silences
             silences_list = self.query_one("#silences-list", SilenceListWidget)
-            silences = connection_manager.get_all("silenced")
-            if silences is not None:
-                silences_list.load_resources(silences)
-            else:
-                any_failures = True
+            silences_list.load_resources_parallel(connection_manager, "silenced")
 
             # Load checks
             checks_list = self.query_one("#checks-list", CheckListWidget)
-            checks = connection_manager.get_all("checks")
-            if checks is not None:
-                checks_list.load_resources(checks)
-            else:
-                any_failures = True
-
-            if any_failures:
-                self.notify("Some resources failed to load", severity="warning")
+            checks_list.load_resources_parallel(connection_manager, "checks")
 
         except Exception as e:
             self.notify(f"Error loading data: {e}", severity="error")

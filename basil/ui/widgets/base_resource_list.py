@@ -149,7 +149,7 @@ class BaseResourceListWidget(DataTable):
             row_key = f"row_{idx}"
             self.add_row(*row_data, key=row_key)
 
-    def get_selected_resource(self) -> SensuResource | None:
+    def get_selected_resource(self) -> Optional[SensuResource]:
         """
         Get the currently selected resource.
 

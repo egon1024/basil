@@ -77,7 +77,7 @@ class BaseResourceDetailWidget(ScrollableContainer):
     def __init__(self, *args, **kwargs):
         """Initialize the resource detail widget."""
         super().__init__(*args, **kwargs)
-        self.current_resource: SensuResource | None = None
+        self.current_resource: Optional[SensuResource] = None
 
     def on_key(self, event) -> None:
         """Override to not consume e, n, s, c, r keys - let them bubble to Screen."""

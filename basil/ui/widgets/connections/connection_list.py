@@ -50,7 +50,7 @@ class ConnectionListWidget(DataTable):
             row_key = f"row_{idx}"
             self.add_row(name, url, namespace, status, key=row_key)
 
-    def get_selected_connection(self) -> Dict[str, Any] | None:
+    def get_selected_connection(self) -> Optional[Dict[str, Any]]:
         """
         Get the currently selected connection.
 

@@ -1,11 +1,18 @@
-import yaml
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+"""
+Configuration writer module for saving encrypted configs.
+"""
+
+# built-in imports
 from pathlib import Path
 from typing import Dict, Any
 import base64
 import os
+
+# 3rd party imports
+import yaml
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 def _derive_key(password: str, salt: bytes) -> bytes:
     """

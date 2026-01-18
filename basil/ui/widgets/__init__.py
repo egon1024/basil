@@ -1,3 +1,6 @@
+"""
+Reusable widgets for the Basil UI.
+"""
 # Base classes
 from .base_resource_list import BaseResourceListWidget
 from .base_resource_detail import BaseResourceDetailWidget
@@ -7,6 +10,7 @@ from .events import EventListWidget, EventDetailWidget
 from .entities import EntityListWidget, EntityDetailWidget
 from .silences import SilenceListWidget, SilenceDetailWidget
 from .checks import CheckListWidget, CheckDetailWidget
+
 
 # Other widgets
 from .server_config import ServerConfigWidget

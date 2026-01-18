@@ -1,14 +1,20 @@
+"""
+Profile manager module for handling user configuration profiles.
+"""
 # built-in imports
-import json
+from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional, Any
-from datetime import datetime
+import json
 import platform
 
 class Profile:
     """Represents a configuration profile."""
 
     def __init__(self, name: str, description: str, path: str, last_used: Optional[str] = None):
+        """
+        Initialize a profile.
+        """
         self.name = name
         self.description = description
         self.path = path
@@ -71,15 +77,15 @@ class ProfileManager:
             return {"profiles": []}
 
         try:
-            with open(self.profiles_file, 'r') as f:
+            with open(self.profiles_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except (json.JSONDecodeError, IOError):
             return {"profiles": []}
 
     def _save_profiles_data(self, data: Dict[str, Any]) -> None:
         """Save profiles data to file."""
-        with open(self.profiles_file, 'w') as f:
-            json.dump(data, f, indent=2)
+        with open(self.profiles_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
 
     def list_profiles(self) -> List[Profile]:
         """Get all profiles."""

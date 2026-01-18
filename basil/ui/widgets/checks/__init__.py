@@ -1,3 +1,6 @@
+"""
+Check-related widgets.
+"""
 from .check_list import CheckListWidget
 from .check_detail import CheckDetailWidget
 

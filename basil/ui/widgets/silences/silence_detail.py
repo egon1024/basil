@@ -1,3 +1,6 @@
+"""
+Widget for displaying Silence details.
+"""
 # Built-in imports
 import json
 from dataclasses import asdict, is_dataclass
@@ -28,7 +31,10 @@ class SilenceDetailWidget(BaseResourceDetailWidget):
         name = getattr(metadata, 'name', 'Unknown') if metadata else 'Unknown'
 
         lines.append(f"[bold cyan]{name}[/bold cyan]")
-        lines.append(f"[dim]Connection: {resource.connection_name} | Namespace: {resource.connection.namespace}[/dim]")
+        lines.append(
+            f"[dim]Connection: {resource.connection_name} | "
+            f"Namespace: {resource.connection.namespace}[/dim]"
+        )
         lines.append("")
 
         # Silence Details

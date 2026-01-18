@@ -1,3 +1,6 @@
+"""
+Screen for creating new server configurations.
+"""
 # Built in imports
 from pathlib import Path
 
@@ -73,11 +76,19 @@ class ConfigCreateScreen(Screen):
     """
 
     def __init__(self):
+        """
+        Initialize the screen state.
+        """
         super().__init__()
         self.step = 1  # 1: password confirm, 2: server setup
         self.password_confirmed = False
         self.connection_tested = False
         self.server_config = None
+        self.new_config_password = None
+        self.connection_manager = None
+        self.config = None
+        self.config_password = None
+        self.config_path = None
 
     def compose(self) -> ComposeResult:
         """
@@ -109,7 +120,6 @@ class ConfigCreateScreen(Screen):
         Initialize with password from app.
         """
         # Password is already entered in ConfigLoadScreen
-        pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
@@ -119,7 +129,7 @@ class ConfigCreateScreen(Screen):
             if self.step == 1:
                 self._confirm_password()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_submitted(self, event: Input.Submitted) -> None:  # pylint: disable=unused-argument
         """
         Handle Enter key in input fields.
         """

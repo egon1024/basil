@@ -1,3 +1,6 @@
+"""
+Widget for displaying Entity details.
+"""
 # built-in imports
 from typing import List, Dict, Any
 
@@ -41,7 +44,10 @@ class EntityDetailWidget(BaseResourceDetailWidget):
         entity_name = getattr(metadata, 'name', 'Unknown') if metadata else 'Unknown'
 
         lines.append(f"[bold cyan]{entity_name}[/bold cyan]")
-        lines.append(f"[dim]Connection: {resource.connection_name} | Namespace: {resource.connection.namespace}[/dim]")
+        lines.append(
+            f"[dim]Connection: {resource.connection_name} | "
+            f"Namespace: {resource.connection.namespace}[/dim]"
+        )
         lines.append("")
 
         # Entity Information
@@ -98,7 +104,11 @@ class EntityDetailWidget(BaseResourceDetailWidget):
             lines.append("")
 
         # If no checks found
-        if not any([checks_by_status['ok'], checks_by_status['warning'], checks_by_status['critical']]):
+        if not any([
+            checks_by_status['ok'],
+            checks_by_status['warning'],
+            checks_by_status['critical']
+        ]):
             lines.append("[dim]No checks found for this entity[/dim]")
             lines.append("")
 
@@ -111,7 +121,9 @@ class EntityDetailWidget(BaseResourceDetailWidget):
 
         return "\n".join(lines)
 
-    def _group_entity_checks(self, entity_name: str, connection_name: str) -> Dict[str, List[Dict[str, Any]]]:
+    def _group_entity_checks(
+        self, entity_name: str, connection_name: str
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Group checks for a specific entity by their status.
 
@@ -156,7 +168,7 @@ class EntityDetailWidget(BaseResourceDetailWidget):
                 result['critical'].append(check_info)
 
         # Sort each list by check name
-        for key in result:
+        for key in result:  # pylint: disable=consider-using-dict-items
             result[key].sort(key=lambda x: x['name'])
 
         return result
@@ -212,8 +224,11 @@ class EntityDetailWidget(BaseResourceDetailWidget):
                         value = getattr(system, key, None)
                         if not callable(value):
                             value_preview = str(value)[:50] if value is not None else 'None'
-                            lines.append(f"    [dim]{key}: {type(value).__name__} = {value_preview}[/dim]")
-                    except:
+                            lines.append(
+                                f"    [dim]{key}: {type(value).__name__} = "
+                                f"{value_preview}[/dim]"
+                            )
+                    except:  # pylint: disable=bare-except
                         pass
 
         # Check for deregister flag
@@ -277,7 +292,8 @@ class EntityDetailWidget(BaseResourceDetailWidget):
             vm_system = self.safe_get(system, 'vm_system')
             vm_role = self.safe_get(system, 'vm_role')
 
-            # Only display VM info if vm_role is "guest" or vm_system is something other than just "kvm"
+            # Only display VM info if vm_role is "guest" or vm_system is
+            # something other than just "kvm"
             if vm_role and vm_role.lower() == 'guest':
                 if vm_system:
                     lines.append(f"  VM System: {vm_system}")

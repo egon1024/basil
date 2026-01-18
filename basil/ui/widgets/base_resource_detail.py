@@ -1,3 +1,6 @@
+"""
+Base class for resource detail widgets.
+"""
 # built-in imports
 from datetime import datetime
 from typing import Any
@@ -82,7 +85,7 @@ class BaseResourceDetailWidget(ScrollableContainer):
             # Don't handle these keys, let them bubble up
             return
         # For 's' and other keys, use default ScrollableContainer behavior
-        super().on_key(event)
+        super().on_key(event)  # pylint: disable=no-member
 
     def compose(self) -> ComposeResult:
         """Create the detail view components."""
@@ -137,7 +140,7 @@ class BaseResourceDetailWidget(ScrollableContainer):
         try:
             dt = datetime.fromtimestamp(timestamp)
             return dt.strftime("%Y-%m-%d %H:%M:%S")
-        except:
+        except:  # pylint: disable=bare-except
             return str(timestamp)
 
     def format_duration(self, duration: float) -> str:
@@ -154,12 +157,12 @@ class BaseResourceDetailWidget(ScrollableContainer):
             return "N/A"
         if duration < 1:
             return f"{duration*1000:.0f}ms"
-        elif duration < 60:
+        if duration < 60:
             return f"{duration:.2f}s"
-        else:
-            mins = int(duration // 60)
-            secs = duration % 60
-            return f"{mins}m {secs:.0f}s"
+
+        mins = int(duration // 60)
+        secs = duration % 60
+        return f"{mins}m {secs:.0f}s"
 
     def get_status_markup(self, status: int, state: str) -> str:
         """

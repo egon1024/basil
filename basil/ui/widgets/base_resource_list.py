@@ -1,3 +1,6 @@
+"""
+Base class for resource list widgets.
+"""
 # builtin imports
 from typing import List, Any
 
@@ -81,7 +84,7 @@ class BaseResourceListWidget(DataTable):
         """
         raise NotImplementedError("Subclasses must implement get_sort_key()")
 
-    def apply_row_styling(self, resource: SensuResource, row_data: tuple) -> tuple:
+    def apply_row_styling(self, resource: SensuResource, row_data: tuple) -> tuple:  # pylint: disable=unused-argument
         """
         Apply styling to row data.
 
@@ -104,7 +107,6 @@ class BaseResourceListWidget(DataTable):
         Override this method if your resource type needs a default sort order.
         Default implementation does nothing (displays in load order).
         """
-        pass
 
     def preprocess_resources(self, resources: List[SensuResource], **kwargs) -> None:
         """
@@ -117,7 +119,6 @@ class BaseResourceListWidget(DataTable):
             resources: List of resources being loaded
             **kwargs: Additional parameters (e.g., events= for entity check counts)
         """
-        pass
 
     def load_resources(self, resources: List[SensuResource], **kwargs) -> None:
         """

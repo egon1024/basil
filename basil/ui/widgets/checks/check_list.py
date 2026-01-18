@@ -1,3 +1,6 @@
+"""
+Widget for displaying a list of Checks.
+"""
 # built-in imports
 from typing import Any
 
@@ -6,7 +9,7 @@ from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.client import SensuResource
 
 
-class CheckListWidget(BaseResourceListWidget):
+class CheckListWidget(BaseResourceListWidget):  # pylint: disable=too-many-ancestors
     """Widget for displaying a list of Sensu checks."""
 
     def setup_columns(self) -> None:

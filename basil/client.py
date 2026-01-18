@@ -1,5 +1,18 @@
+"""
+Sensu client wrapper and connection management.
+"""
+
+# built-in imports
 from typing import List, Optional, Dict, Any
+from urllib.parse import urlparse
+
+# 3rd party imports
 from fawlty.sensu_client import SensuClient
+from fawlty.sensu_server import SensuServer
+from fawlty.resources.entity import Entity
+from fawlty.resources.event import Event
+from fawlty.resources.check import Check
+from fawlty.resources.silence import Silence
 
 
 class SensuResource:
@@ -7,6 +20,9 @@ class SensuResource:
     Wrapper for a Sensu resource that includes connection metadata.
     """
     def __init__(self, data: Dict[str, Any], connection: 'SensuConnection'):
+        """
+        Initialize the wrapper.
+        """
         self.data = data
         self.connection = connection
         self.connection_name = connection.name
@@ -18,6 +34,9 @@ class SensuResource:
         return self.data[key]
 
     def __repr__(self) -> str:
+        """
+        Return string representation.
+        """
         return f"SensuResource(connection={self.connection_name}, data={self.data})"
 
 
@@ -29,8 +48,9 @@ class SensuConnection:
     def __init__(self, name: str, url: str, api_key: Optional[str] = None,
                  username: Optional[str] = None, password: Optional[str] = None,
                  namespace: str = "default"):
-        from fawlty.sensu_server import SensuServer
-        from urllib.parse import urlparse
+        """
+        Initialize a new Sensu connection.
+        """
 
         self.name = name
         self.namespace = namespace
@@ -57,7 +77,8 @@ class SensuConnection:
             # TODO: fawlty doesn't support API key auth yet
             # For now, we'll raise an error
             raise NotImplementedError("API key authentication is not yet supported by fawlty")
-        elif username and password:
+
+        if username and password:
             self.client.login(username, password)
         else:
             raise ValueError("Either api_key or username/password must be provided")
@@ -68,6 +89,9 @@ class ConnectionManager:
     Singleton-like manager for all Sensu connections.
     """
     def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize the connection manager with a configuration dictionary.
+        """
         self._connections: Dict[str, SensuConnection] = {}
         self._load_connections(config)
 
@@ -122,13 +146,10 @@ class ConnectionManager:
         Returns:
             List of SensuResource instances, each wrapping the original data
             with connection metadata accessible via .connection and .connection_name.
-            Returns None if all connections failed (to distinguish from empty but successful result).
+            Returns None if all connections failed (to distinguish from empty but successful
+            result).
         """
         # Map resource types to fawlty resource classes
-        from fawlty.resources.entity import Entity
-        from fawlty.resources.event import Event
-        from fawlty.resources.check import Check
-        from fawlty.resources.silence import Silence
 
         resource_map = {
             'entities': Entity,
@@ -157,6 +178,7 @@ class ConnectionManager:
                     all_items.append(SensuResource(data=item, connection=conn))
 
                 success_count += 1
+
             except Exception as e:
                 # Track error but continue with other connections
                 error_count += 1

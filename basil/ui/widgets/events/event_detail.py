@@ -1,8 +1,7 @@
+"""
+Widget for displaying Event details.
+"""
 # built-in imports
-from typing import List, Dict, Any
-
-# Third party imports
-from rich.text import Text
 
 # Basil imports
 from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
@@ -26,11 +25,22 @@ class EventDetailWidget(BaseResourceDetailWidget):
         lines = []
 
         # Header
-        entity_name = getattr(data.entity, 'metadata', {}).name if hasattr(data, 'entity') and data.entity else "Unknown"
-        check_name = getattr(data.check, 'metadata', {}).name if hasattr(data, 'check') and data.check else "Unknown"
+        entity_name = (
+            getattr(data.entity, 'metadata', {}).name
+            if hasattr(data, 'entity') and data.entity
+            else "Unknown"
+        )
+        check_name = (
+            getattr(data.check, 'metadata', {}).name
+            if hasattr(data, 'check') and data.check
+            else "Unknown"
+        )
 
         lines.append(f"[bold cyan]{entity_name} / {check_name}[/bold cyan]")
-        lines.append(f"[dim]Connection: {resource.connection_name} | Namespace: {resource.connection.namespace}[/dim]")
+        lines.append(
+            f"[dim]Connection: {resource.connection_name} | "
+            f"Namespace: {resource.connection.namespace}[/dim]"
+        )
         lines.append("")
 
         # Status Section
@@ -38,7 +48,10 @@ class EventDetailWidget(BaseResourceDetailWidget):
             check = data.check
             lines.append("[bold]Status[/bold]")
             lines.append(f"  {self.get_status_markup(check.status, check.state)}")
-            lines.append(f"  Occurrences: {check.occurrences} / Watermark: {check.occurrences_watermark}")
+            lines.append(
+                f"  Occurrences: {check.occurrences} / "
+                f"Watermark: {check.occurrences_watermark}"
+            )
             if check.is_silenced:
                 lines.append("  [yellow]SILENCED[/yellow]")
             lines.append("")
@@ -97,21 +110,42 @@ class EventDetailWidget(BaseResourceDetailWidget):
                     for hook in hooks_data:
                         # Try different ways to access hook data
                         if hasattr(hook, 'metadata'):
-                            hook_name = hook.metadata.name if hasattr(hook.metadata, 'name') else 'Unknown'
+                            hook_name = (
+                                hook.metadata.name
+                                if hasattr(hook.metadata, 'name')
+                                else 'Unknown'
+                            )
                         elif hasattr(hook, 'name'):
                             hook_name = hook.name
                         elif isinstance(hook, dict):
-                            hook_name = hook.get('name', hook.get('metadata', {}).get('name', 'Unknown'))
+                            hook_name = hook.get(
+                                'name', hook.get('metadata', {}).get('name', 'Unknown')
+                            )
                         else:
                             hook_name = 'Unknown'
 
-                        hook_status = getattr(hook, 'status', hook.get('status', 'N/A') if isinstance(hook, dict) else 'N/A')
-                        hook_output = getattr(hook, 'output', hook.get('output', '') if isinstance(hook, dict) else '')
-                        hook_duration = getattr(hook, 'duration', hook.get('duration', None) if isinstance(hook, dict) else None)
-                        hook_executed = getattr(hook, 'executed', hook.get('executed', None) if isinstance(hook, dict) else None)
+                        hook_status = getattr(
+                            hook, 'status',
+                            hook.get('status', 'N/A') if isinstance(hook, dict) else 'N/A'
+                        )
+                        hook_output = getattr(
+                            hook, 'output',
+                            hook.get('output', '') if isinstance(hook, dict) else ''
+                        )
+                        hook_duration = getattr(
+                            hook, 'duration',
+                            hook.get('duration', None) if isinstance(hook, dict) else None
+                        )
+                        hook_executed = getattr(
+                            hook, 'executed',
+                            hook.get('executed', None) if isinstance(hook, dict) else None
+                        )
 
                         status_color = "green" if hook_status == 0 else "red"
-                        lines.append(f"  [{status_color}]{hook_name}[/{status_color}] (exit: {hook_status})")
+                        lines.append(
+                            f"  [{status_color}]{hook_name}[/{status_color}] "
+                            f"(exit: {hook_status})"
+                        )
 
                         if hook_executed:
                             lines.append(f"    Executed: {self.format_timestamp(hook_executed)}")
@@ -121,7 +155,10 @@ class EventDetailWidget(BaseResourceDetailWidget):
                         if hook_output:
                             output_lines = hook_output.strip().split('\n')
                             if len(output_lines) > 5:
-                                lines.append(f"    [dim](Showing first 5 lines of {len(output_lines)})[/dim]")
+                                lines.append(
+                                    f"    [dim](Showing first 5 lines of "
+                                    f"{len(output_lines)})[/dim]"
+                                )
                                 for line in output_lines[:5]:
                                     lines.append(f"    {line}")
                                 lines.append("    [dim]...[/dim]")
@@ -132,16 +169,30 @@ class EventDetailWidget(BaseResourceDetailWidget):
                 elif isinstance(hooks_data, dict):
                     # Handle dict format if hooks are keyed by name
                     for hook_name, hook_data in hooks_data.items():
-                        hook_status = hook_data.get('status', 'N/A') if isinstance(hook_data, dict) else 'N/A'
-                        hook_output = hook_data.get('output', '') if isinstance(hook_data, dict) else ''
+                        hook_status = (
+                            hook_data.get('status', 'N/A')
+                            if isinstance(hook_data, dict) else 'N/A'
+                        )
+                        hook_output = (
+                            hook_data.get('output', '')
+                            if isinstance(hook_data, dict) else ''
+                        )
 
-                        status_color = "green" if hook_status == 0 else "red"
-                        lines.append(f"  [{status_color}]{hook_name}[/{status_color}] (exit: {hook_status})")
+                        status_color = (
+                            "green" if hook_status == 0 else "red"
+                        )
+                        lines.append(
+                            f"  [{status_color}]{hook_name}"
+                            f"[/{status_color}] (exit: {hook_status})"
+                        )
 
                         if hook_output:
                             output_lines = hook_output.strip().split('\n')
                             if len(output_lines) > 5:
-                                lines.append(f"    [dim](Showing first 5 lines of {len(output_lines)})[/dim]")
+                                lines.append(
+                                    f"    [dim](Showing first 5 lines "
+                                    f"of {len(output_lines)})[/dim]"
+                                )
                                 for line in output_lines[:5]:
                                     lines.append(f"    {line}")
                                 lines.append("    [dim]...[/dim]")
@@ -189,7 +240,10 @@ class EventDetailWidget(BaseResourceDetailWidget):
             if hasattr(entity, 'system') and entity.system:
                 system = entity.system
                 if hasattr(system, 'platform'):
-                    lines.append(f"  Platform: {system.platform} {getattr(system, 'platform_version', '')}")
+                    lines.append(
+                        f"  Platform: {system.platform} "
+                        f"{getattr(system, 'platform_version', '')}"
+                    )
                 if hasattr(system, 'arch'):
                     lines.append(f"  Architecture: {system.arch}")
 

@@ -1,3 +1,6 @@
+"""
+Configuration loader module for reading and decrypting configs.
+"""
 # built-in imports
 import base64
 from typing import Dict, Any
@@ -27,6 +30,9 @@ class ConfigLoader:
     Loads and decrypts configuration files.
     """
     def __init__(self, config_path: Path):
+        """
+        Initialize with path to the encrypted config file.
+        """
         self.config_path = config_path
 
     def load(self, password: str) -> Dict[str, Any]:

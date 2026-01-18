@@ -1,3 +1,6 @@
+"""
+Main Textual Application for Basil.
+"""
 # third party imports
 from textual.app import App
 from textual.binding import Binding
@@ -21,6 +24,9 @@ class BasilApp(App):
     ]
 
     def __init__(self):
+        """
+        Initialize the application.
+        """
         super().__init__()
         self.connection_manager = None
         self.current_profile = None

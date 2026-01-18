@@ -1,3 +1,6 @@
+"""
+Widget for displaying a list of Events.
+"""
 # built-in imports
 from typing import Any
 
@@ -9,7 +12,7 @@ from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.client import SensuResource
 
 
-class EventListWidget(BaseResourceListWidget):
+class EventListWidget(BaseResourceListWidget):  # pylint: disable=too-many-ancestors
     """Widget for displaying a list of Sensu events."""
 
     def setup_columns(self) -> None:
@@ -93,7 +96,12 @@ class EventListWidget(BaseResourceListWidget):
             text_content = str(cell)
             # Add extra spaces to fill the cell width
             padded_text = text_content.ljust(len(text_content) + 1)
-            styled_data.append(Text(padded_text, style=f"{fg_color} on {bg_color}", no_wrap=False, overflow="ellipsis"))
+            styled_data.append(Text(
+                padded_text,
+                style=f"{fg_color} on {bg_color}",
+                no_wrap=False,
+                overflow="ellipsis"
+            ))
 
         return tuple(styled_data)
 

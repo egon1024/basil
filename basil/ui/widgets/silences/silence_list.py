@@ -1,15 +1,15 @@
+"""
+Widget for displaying a list of Silences.
+"""
 # built-in imports
 from typing import Any
-
-# Third party imports
-from rich.text import Text
 
 # Basil imports
 from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.client import SensuResource
 
 
-class SilenceListWidget(BaseResourceListWidget):
+class SilenceListWidget(BaseResourceListWidget):  # pylint: disable=too-many-ancestors
     """Widget for displaying a list of Sensu silences."""
 
     def setup_columns(self) -> None:

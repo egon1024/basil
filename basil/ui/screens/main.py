@@ -1,3 +1,6 @@
+"""
+Main application screen with tabbed interface.
+"""
 # Built-in imports
 
 # 3rd party imports
@@ -22,7 +25,7 @@ from basil.ui.widgets.connections import ConnectionListWidget, ConnectionDetailW
 class CustomTabbedContent(TabbedContent):
     """TabbedContent that doesn't consume our custom key bindings."""
 
-    def on_key(self, event) -> None:
+    def on_key(self, event) -> None:  # pylint: disable=useless-return
         """Override to not handle e, n, s, k, c, r keys - let them bubble to Screen."""
         if event.key in ('e', 'n', 's', 'k', 'c', 'r'):
             # Don't handle these keys, let them bubble up to the Screen
@@ -283,11 +286,17 @@ class MainScreen(Screen):
             # Add new connection
             # Check for duplicate names
             if any(c.get("name") == event.connection.get("name") for c in connections):
-                self.notify(f"Connection '{event.connection.get('name')}' already exists", severity="error")
+                self.notify(
+                    f"Connection '{event.connection.get('name')}' already exists",
+                    severity="error"
+                )
                 return
 
             connections.append(event.connection)
-            self.notify(f"Connection '{event.connection.get('name')}' created successfully", severity="information")
+            self.notify(
+                f"Connection '{event.connection.get('name')}' created successfully",
+                severity="information"
+            )
         else:
             # Update existing connection
             for i, conn in enumerate(connections):
@@ -295,7 +304,10 @@ class MainScreen(Screen):
                     connections[i] = event.connection
                     break
 
-            self.notify(f"Connection '{event.connection.get('name')}' updated successfully", severity="information")
+            self.notify(
+                f"Connection '{event.connection.get('name')}' updated successfully",
+                severity="information"
+            )
 
         # Save updated config
         self._save_config()
@@ -328,7 +340,10 @@ class MainScreen(Screen):
         connections[:] = [c for c in connections if c.get("name") != event.connection_name]
 
         if len(connections) < original_count:
-            self.notify(f"Connection '{event.connection_name}' deleted successfully", severity="information")
+            self.notify(
+                f"Connection '{event.connection_name}' deleted successfully",
+                severity="information"
+            )
 
             # Save updated config
             self._save_config()
@@ -375,6 +390,7 @@ class MainScreen(Screen):
 
         try:
             # Create a new connection manager with the updated config
+            # pylint: disable=attribute-defined-outside-init
             self.app.connection_manager = ConnectionManager(self.app.config)
         except Exception as e:
             self.notify(f"Error reloading connections: {e}", severity="error")

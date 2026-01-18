@@ -1,3 +1,6 @@
+"""
+Widget for displaying Connection details and editing configurations.
+"""
 # Built-in imports
 from typing import Dict, Any, Optional
 
@@ -63,6 +66,9 @@ class ConnectionDetailWidget(ScrollableContainer):
     class ConnectionSaved(Message):
         """Message emitted when a connection is saved."""
         def __init__(self, connection: Dict[str, Any], is_new: bool):
+            """
+            Initialize the message.
+            """
             super().__init__()
             self.connection = connection
             self.is_new = is_new
@@ -70,6 +76,9 @@ class ConnectionDetailWidget(ScrollableContainer):
     class ConnectionDeleted(Message):
         """Message emitted when a connection is deleted."""
         def __init__(self, connection_name: str):
+            """
+            Initialize the message.
+            """
             super().__init__()
             self.connection_name = connection_name
 
@@ -82,7 +91,9 @@ class ConnectionDetailWidget(ScrollableContainer):
 
     def compose(self) -> ComposeResult:
         """Create the detail view components."""
-        yield Static("Select a connection to view details", id="detail-title", classes="detail-title")
+        yield Static(
+            "Select a connection to view details", id="detail-title", classes="detail-title"
+        )
         yield ServerConfigWidget(id="connection-form")
         with Horizontal(classes="button-row"):
             yield Button("New", variant="success", id="new-button")

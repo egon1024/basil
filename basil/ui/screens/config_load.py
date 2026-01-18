@@ -1,3 +1,6 @@
+"""
+Screen for loading encrypted configuration files.
+"""
 # Built-in imports
 from pathlib import Path
 
@@ -63,6 +66,22 @@ class ConfigLoadScreen(Screen):
     }
     """
 
+    def __init__(
+        self,
+        profile_name: str = None,
+        config_path: Path = None
+    ):
+        """
+        Initialize the screen.
+        """
+        super().__init__()
+        self.profile_name = profile_name
+        self.config_file = config_path
+        self.connection_manager = None
+        self.config = None
+        self.config_password = None
+        self.config_path = None
+
     def compose(self) -> ComposeResult:
         """
         Create the UI components.
@@ -95,7 +114,7 @@ class ConfigLoadScreen(Screen):
         if event.button.id == "load-button":
             self._attempt_load()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_submitted(self, event: Input.Submitted) -> None:  # pylint: disable=unused-argument
         """
         Handle Enter key in input fields.
         """
@@ -202,6 +221,13 @@ class ConfirmDialog(Screen):
     """
 
     def __init__(self, message: str, callback):
+        """
+        Initialize the dialog.
+
+        Args:
+            message: The message to display.
+            callback: Function to call with result (True/False).
+        """
         super().__init__()
         self.message = message
         self.callback = callback

@@ -1,3 +1,6 @@
+"""
+Widget for configuring Sensu server connection details.
+"""
 # Built-in imports
 from typing import Dict, Any
 
@@ -48,6 +51,9 @@ class ServerConfigWidget(Widget):
     """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the widget.
+        """
         super().__init__(*args, **kwargs)
         self.auth_type = "api_key"  # or "username_password"
 

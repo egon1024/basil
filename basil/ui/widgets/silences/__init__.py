@@ -1,3 +1,6 @@
+"""
+Silence-related widgets.
+"""
 from .silence_list import SilenceListWidget
 from .silence_detail import SilenceDetailWidget
 

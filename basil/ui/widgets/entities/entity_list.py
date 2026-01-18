@@ -1,3 +1,6 @@
+"""
+Widget for displaying a list of Entities.
+"""
 # built-in imports
 from typing import Any, List
 
@@ -9,7 +12,7 @@ from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.client import SensuResource
 
 
-class EntityListWidget(BaseResourceListWidget):
+class EntityListWidget(BaseResourceListWidget):  # pylint: disable=too-many-ancestors
     """Widget for displaying a list of Sensu entities."""
 
     def __init__(self, *args, **kwargs):
@@ -203,9 +206,19 @@ class EntityListWidget(BaseResourceListWidget):
                 text_content = str(cell)
                 padded_text = text_content.ljust(len(text_content) + 1)
                 if bg_color:
-                    styled_data.append(Text(padded_text, style=f"{fg_color} on {bg_color}", no_wrap=False, overflow="ellipsis"))
+                    styled_data.append(Text(
+                        padded_text,
+                        style=f"{fg_color} on {bg_color}",
+                        no_wrap=False,
+                        overflow="ellipsis"
+                    ))
                 else:
-                    styled_data.append(Text(padded_text, style=fg_color, no_wrap=False, overflow="ellipsis"))
+                    styled_data.append(Text(
+                        padded_text,
+                        style=fg_color,
+                        no_wrap=False,
+                        overflow="ellipsis"
+                    ))
 
         return tuple(styled_data)
 

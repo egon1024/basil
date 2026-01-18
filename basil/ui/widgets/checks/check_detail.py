@@ -1,3 +1,6 @@
+"""
+Widget for displaying Check details.
+"""
 # built in imports
 from dataclasses import asdict, is_dataclass
 import json
@@ -28,7 +31,10 @@ class CheckDetailWidget(BaseResourceDetailWidget):
         name = getattr(metadata, 'name', 'Unknown') if metadata else 'Unknown'
 
         lines.append(f"[bold cyan]{name}[/bold cyan]")
-        lines.append(f"[dim]Connection: {resource.connection_name} | Namespace: {resource.connection.namespace}[/dim]")
+        lines.append(
+            f"[dim]Connection: {resource.connection_name} | "
+            f"Namespace: {resource.connection.namespace}[/dim]"
+        )
         lines.append("")
 
         # Check Configuration

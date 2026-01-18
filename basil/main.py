@@ -1,3 +1,6 @@
+"""
+Main entry point for the Basil application.
+"""
 from basil.ui.app import BasilApp
 
 

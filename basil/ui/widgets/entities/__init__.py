@@ -1,3 +1,6 @@
+"""
+Entity-related widgets.
+"""
 from .entity_list import EntityListWidget
 from .entity_detail import EntityDetailWidget
 

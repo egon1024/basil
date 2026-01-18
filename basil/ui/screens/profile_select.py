@@ -1,3 +1,6 @@
+"""
+Screen for selecting, creating, and managing profiles.
+"""
 # Built-in imports
 from datetime import datetime
 from pathlib import Path
@@ -83,9 +86,13 @@ class ProfileSelectScreen(Screen):
     """
 
     def __init__(self):
+        """
+        Initialize the screen.
+        """
         super().__init__()
         self.profile_manager = ProfileManager()
         self.selected_profile_name = None
+        self.current_profile = None
 
     def compose(self) -> ComposeResult:
         """
@@ -368,6 +375,9 @@ class NewProfileDialog(Screen):
     """
 
     def __init__(self, profile_manager: ProfileManager, callback):
+        """
+        Initialize the dialog.
+        """
         super().__init__()
         self.profile_manager = profile_manager
         self.callback = callback
@@ -402,7 +412,7 @@ class NewProfileDialog(Screen):
         elif event.button.id == "cancel-button":
             self.app.pop_screen()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_submitted(self, event: Input.Submitted) -> None:  # pylint: disable=unused-argument
         """
         Handle Enter key in input fields.
         """
@@ -492,6 +502,9 @@ class ImportProfileDialog(Screen):
     """
 
     def __init__(self, profile_manager: ProfileManager, callback):
+        """
+        Initialize the dialog.
+        """
         super().__init__()
         self.profile_manager = profile_manager
         self.callback = callback
@@ -537,7 +550,7 @@ class ImportProfileDialog(Screen):
         elif event.button.id == "cancel-button":
             self.app.pop_screen()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_submitted(self, event: Input.Submitted) -> None:  # pylint: disable=unused-argument
         """
         Handle Enter key in input fields.
         """
@@ -627,6 +640,9 @@ class DeleteConfirmDialog(Screen):
     """
 
     def __init__(self, message: str, callback):
+        """
+        Initialize the dialog.
+        """
         super().__init__()
         self.message = message
         self.callback = callback
@@ -655,7 +671,9 @@ class DeleteConfirmDialog(Screen):
         if event.button.id == "toggle-delete-file":
             self.delete_file = not self.delete_file
             button = event.button
-            button.label = "☑ Also delete config file" if self.delete_file else "☐ Also delete config file"
+            button.label = (
+                "☑ Also delete config file" if self.delete_file else "☐ Also delete config file"
+            )
         elif event.button.id == "yes-button":
             self.app.pop_screen()
             self.callback(True, self.delete_file)

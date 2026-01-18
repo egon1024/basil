@@ -1,3 +1,6 @@
+"""
+Widget for displaying a list of Connections.
+"""
 # built-in imports
 from typing import Any, List, Dict
 
@@ -58,7 +61,7 @@ class ConnectionListWidget(DataTable):
             return self.connections[self.cursor_row]
         return None
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:  # pylint: disable=unused-argument
         """
         Handle row selection.
 

@@ -17,8 +17,8 @@ class PathInput(Input):
 
     def __init__(
         self,
-        default_dir: Optional[str] = None,
         *args,
+        default_dir: Optional[str] = None,
         **kwargs
     ):
         """

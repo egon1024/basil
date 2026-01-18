@@ -55,6 +55,7 @@ class MainScreen(Screen):
 
     .detail-pane {
         width: 40%;
+        height: 100%;
     }
     """
     

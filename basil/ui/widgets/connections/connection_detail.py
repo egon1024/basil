@@ -16,7 +16,7 @@ class ConnectionDetailWidget(ScrollableContainer):
     ConnectionDetailWidget {
         border: solid $primary;
         padding: 1;
-        height: auto;
+        height: 100%;
     }
 
     ConnectionDetailWidget > * {

@@ -61,6 +61,15 @@ jobs:
           console.log(`Detected bump type: ${bump}`);
           core.setOutput('bump', bump);
 
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Poetry
+      run: |
+        pip install poetry
+
     - name: Calculate Next Version
       id: semver
       run: |
@@ -93,6 +102,22 @@ jobs:
         NEXT_VERSION="v$MAJOR.$MINOR.$PATCH"
         echo "Next version: $NEXT_VERSION"
         echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Bump Version and Push
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        
+        NEW_VERSION=${{ steps.semver.outputs.version }}
+        # Remove 'v' for poetry
+        CLEAN_VERSION=${NEW_VERSION#v}
+        
+        poetry version $CLEAN_VERSION
+        
+        git add pyproject.toml
+        git commit -m "Bump version to $NEW_VERSION [skip ci]"
+        git tag $NEW_VERSION
+        git push origin main --tags
 
     - name: Create Release
       uses: softprops/action-gh-release@v1

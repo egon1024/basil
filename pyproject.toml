@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "basil"
-version = "0.0.1"
+version = "0.2.0"
 description = "A terminal based client for Sensu"
 authors = ["Cole Tuininga <cole.tuininga@gmail.com>"]
 license = "MIT"

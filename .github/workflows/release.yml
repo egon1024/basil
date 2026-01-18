@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Determine Impact
+      id: impact
+      uses: actions/github-script@v6
+      with:
+        script: |
+          // Get the commit SHA that triggered the workflow
+          const sha = context.sha;
+          
+          // Find the PR associated with this commit
+          const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: sha,
+          });
+          
+          if (prs.length === 0) {
+            console.log("No PR found for this commit. Defaulting to minor.");
+            core.setOutput('bump', 'minor');
+            return;
+          }
+          
+          const pr = prs[0];
+          const body = pr.body || "";
+          
+          const hasMajor = body.includes("#major");
+          const hasMinor = body.includes("#minor");
+          const hasPatch = body.includes("#patch");
+          
+          let count = 0;
+          if (hasMajor) count++;
+          if (hasMinor) count++;
+          if (hasPatch) count++;
+          
+          if (count > 1) {
+            core.setFailed("Multiple version bump tags found in PR description. Please use only one of #major, #minor, or #patch.");
+            return;
+          }
+          
+          let bump = 'minor'; // Default
+          if (hasMajor) bump = 'major';
+          else if (hasPatch) bump = 'patch';
+          
+          console.log(`Detected bump type: ${bump}`);
+          core.setOutput('bump', bump);
+
+    - name: Calculate Next Version
+      id: semver
+      run: |
+        # Get the latest tag, default to v0.1.0 if none exists
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0")
+        echo "Latest tag: $LATEST_TAG"
+        
+        # Remove 'v' prefix
+        VERSION=${LATEST_TAG#v}
+        
+        # Split into components
+        IFS='.' read -r -a PARTS <<< "$VERSION"
+        MAJOR=${PARTS[0]}
+        MINOR=${PARTS[1]}
+        PATCH=${PARTS[2]}
+        
+        BUMP_TYPE="${{ steps.impact.outputs.bump }}"
+        
+        if [ "$BUMP_TYPE" == "major" ]; then
+          MAJOR=$((MAJOR + 1))
+          MINOR=0
+          PATCH=0
+        elif [ "$BUMP_TYPE" == "minor" ]; then
+          MINOR=$((MINOR + 1))
+          PATCH=0
+        else
+          PATCH=$((PATCH + 1))
+        fi
+        
+        NEXT_VERSION="v$MAJOR.$MINOR.$PATCH"
+        echo "Next version: $NEXT_VERSION"
+        echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.semver.outputs.version }}
+        name: Release ${{ steps.semver.outputs.version }}
+        generate_release_notes: true

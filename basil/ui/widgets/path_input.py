@@ -1,9 +1,11 @@
 """
 Custom path input widget with autocomplete support.
 """
-
+# built-in imports
 from pathlib import Path
 from typing import Optional, List
+
+# third party imports
 from textual.widgets import Input
 from textual.events import Key
 

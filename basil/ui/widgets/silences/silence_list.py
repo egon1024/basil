@@ -1,6 +1,12 @@
+# built-in imports
+from typing import Any
+
+# Third party imports
+from rich.text import Text
+
+# Basil imports
 from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.client import SensuResource
-from typing import Any
 
 
 class SilenceListWidget(BaseResourceListWidget):

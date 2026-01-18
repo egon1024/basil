@@ -1,7 +1,10 @@
+# built in imports
+from dataclasses import asdict, is_dataclass
+import json
+
+# Basil imports
 from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
 from basil.client import SensuResource
-import json
-from dataclasses import asdict, is_dataclass
 
 
 class CheckDetailWidget(BaseResourceDetailWidget):

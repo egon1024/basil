@@ -1,9 +1,15 @@
+# Built-in imports
+
+# 3rd party imports
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, TabbedContent, TabPane, Static, DataTable
-from textual.containers import Horizontal, Vertical, Container
+from textual.widgets import Header, Footer, TabbedContent, TabPane, DataTable
+from textual.containers import Horizontal, Container
 from textual.binding import Binding
-from textual.message import Message
+
+# Basil imports
+from basil.client import ConnectionManager
+from basil.config_writer import save_encrypted_config
 from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
 from basil.ui.widgets.events import EventListWidget, EventDetailWidget
@@ -42,7 +48,7 @@ class MainScreen(Screen):
         Binding("[", "resize_panels('shrink')", "Shrink Left", show=False, priority=True),
         Binding("]", "resize_panels('grow')", "Grow Left", show=False, priority=True),
     ]
-    
+
     CSS = """
     Horizontal.split-view {
         height: 1fr;
@@ -58,13 +64,13 @@ class MainScreen(Screen):
         height: 100%;
     }
     """
-    
+
     def compose(self) -> ComposeResult:
         """
         Create the main UI layout.
         """
         yield Header()
-        
+
         with CustomTabbedContent(initial="events"):
             with TabPane("Events", id="events"):
                 with Horizontal(classes="split-view"):
@@ -100,16 +106,16 @@ class MainScreen(Screen):
                         yield ConnectionListWidget(id="connections-list")
                     with Container(classes="detail-pane"):
                         yield ConnectionDetailWidget(id="connections-detail")
-        
+
         yield Footer()
-    
+
     def on_mount(self) -> None:
         """
         Load initial data when screen is mounted.
         """
         self.load_all_data()
         self.load_connections()
-    
+
     def load_all_data(self) -> None:
         """
         Load data for all resource types.
@@ -163,7 +169,7 @@ class MainScreen(Screen):
 
         except Exception as e:
             self.notify(f"Error loading data: {e}", severity="error")
-    
+
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """
         Handle row selection in any resource list.
@@ -192,16 +198,14 @@ class MainScreen(Screen):
             except Exception:
                 # Tab doesn't have a detail widget
                 pass
-    
 
-    
     def action_switch_tab(self, tab_id: str) -> None:
         """
         Switch to a specific tab.
         """
         tabbed_content = self.query_one(TabbedContent)
         tabbed_content.active = tab_id
-    
+
     def action_refresh_data(self) -> None:
         """
         Refresh all data from connections.
@@ -341,7 +345,6 @@ class MainScreen(Screen):
 
     def _save_config(self) -> None:
         """Save the current configuration to disk."""
-        from basil.config_writer import save_encrypted_config
 
         if not hasattr(self.app, 'config') or not self.app.config:
             self.notify("Configuration not loaded", severity="error")
@@ -366,7 +369,6 @@ class MainScreen(Screen):
 
     def _reload_connection_manager(self) -> None:
         """Reload the connection manager with the current configuration."""
-        from basil.client import ConnectionManager
 
         if not hasattr(self.app, 'config') or not self.app.config:
             return

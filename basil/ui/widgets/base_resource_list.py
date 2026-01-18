@@ -1,6 +1,11 @@
-from textual.widgets import DataTable
-from basil.client import SensuResource
+# builtin imports
 from typing import List, Any
+
+# third party imports
+from textual.widgets import DataTable
+
+# Basil imports
+from basil.client import SensuResource
 
 
 class BaseResourceListWidget(DataTable):

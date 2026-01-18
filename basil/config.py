@@ -1,11 +1,13 @@
+# built-in imports
+import base64
+from typing import Dict, Any
+from pathlib import Path
+
+# third party imports
 import yaml
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from typing import Dict, Any
-from pathlib import Path
-import base64
-
 
 def _derive_key(password: str, salt: bytes) -> bytes:
     """
@@ -19,7 +21,6 @@ def _derive_key(password: str, salt: bytes) -> bytes:
     )
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
     return key
-
 
 class ConfigLoader:
     """
@@ -42,9 +43,9 @@ class ConfigLoader:
 
         # Derive key from password
         key = _derive_key(password, salt)
-        
+
         # Decrypt
         fernet = Fernet(key)
         decrypted_data = fernet.decrypt(encrypted_data)
-        
+
         return yaml.safe_load(decrypted_data)

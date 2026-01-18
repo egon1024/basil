@@ -1,6 +1,9 @@
+# built-in imports
+from typing import Any, List, Dict
+
+# Basil imports
 from textual.widgets import DataTable
 from textual.message import Message
-from typing import List, Dict, Any
 
 
 class ConnectionListWidget(DataTable):

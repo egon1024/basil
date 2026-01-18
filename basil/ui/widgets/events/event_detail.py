@@ -1,3 +1,10 @@
+# built-in imports
+from typing import List, Dict, Any
+
+# Third party imports
+from rich.text import Text
+
+# Basil imports
 from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
 from basil.client import SensuResource
 

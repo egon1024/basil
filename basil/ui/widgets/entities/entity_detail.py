@@ -1,6 +1,9 @@
+# built-in imports
+from typing import List, Dict, Any
+
+# Basil imports
 from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
 from basil.client import SensuResource
-from typing import List, Dict, Any
 
 
 class EntityDetailWidget(BaseResourceDetailWidget):
@@ -179,7 +182,7 @@ class EntityDetailWidget(BaseResourceDetailWidget):
         # - system.platform, system.platform_version, system.arch, system.hostname
 
         # Debug: Show all available attributes and system attributes
-        lines.append(f"  [dim]Entity attributes:[/dim]")
+        lines.append("  [dim]Entity attributes:[/dim]")
         if hasattr(data, '__dict__'):
             for key in sorted(data.__dict__.keys()):
                 lines.append(f"    [dim]{key}[/dim]")
@@ -190,7 +193,7 @@ class EntityDetailWidget(BaseResourceDetailWidget):
 
         system = self.safe_get(data, 'system')
         if system:
-            lines.append(f"  [dim]System attributes:[/dim]")
+            lines.append("  [dim]System attributes:[/dim]")
             if hasattr(system, '__dict__'):
                 for key in sorted(system.__dict__.keys()):
                     value = getattr(system, key, None)
@@ -216,7 +219,7 @@ class EntityDetailWidget(BaseResourceDetailWidget):
         # Check for deregister flag
         deregister = self.safe_get(data, 'deregister')
         if deregister:
-            lines.append(f"  Deregister: [yellow]Enabled[/yellow]")
+            lines.append("  Deregister: [yellow]Enabled[/yellow]")
 
         # Check for deregistration handler
         deregistration = self.safe_get(data, 'deregistration')
@@ -235,7 +238,7 @@ class EntityDetailWidget(BaseResourceDetailWidget):
         # Check for redact list
         redact = self.safe_get(data, 'redact')
         if redact:
-            lines.append(f"  Redacted Fields:")
+            lines.append("  Redacted Fields:")
             for field in redact:
                 lines.append(f"    • {field}")
 
@@ -361,13 +364,13 @@ class EntityDetailWidget(BaseResourceDetailWidget):
         if metadata:
             labels = self.safe_get(metadata, 'labels')
             if labels and isinstance(labels, dict):
-                lines.append(f"  Labels:")
+                lines.append("  Labels:")
                 for key, value in labels.items():
                     lines.append(f"    • {key}: {value}")
 
             annotations = self.safe_get(metadata, 'annotations')
             if annotations and isinstance(annotations, dict):
-                lines.append(f"  Annotations:")
+                lines.append("  Annotations:")
                 for key, value in annotations.items():
                     # Truncate long annotation values
                     value_str = str(value)[:80]

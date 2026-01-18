@@ -1,7 +1,12 @@
+# built-in imports
+from typing import Any, List
+
+# Third party imports
+from rich.text import Text
+
+# Basil imports
 from basil.ui.widgets.base_resource_list import BaseResourceListWidget
 from basil.client import SensuResource
-from rich.text import Text
-from typing import Any, List
 
 
 class EntityListWidget(BaseResourceListWidget):

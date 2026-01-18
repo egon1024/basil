@@ -1,7 +1,5 @@
 from typing import List, Optional, Dict, Any
-import fawlty
 from fawlty.sensu_client import SensuClient
-from basil.config import ConfigLoader
 
 
 class SensuResource:

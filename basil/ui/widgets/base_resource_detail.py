@@ -1,9 +1,14 @@
+# built-in imports
+from datetime import datetime
+from typing import Any
+
+# Third party imports
 from textual.app import ComposeResult
 from textual.widgets import Static
 from textual.containers import ScrollableContainer
+
+# Basil imports
 from basil.client import SensuResource
-from datetime import datetime
-from typing import Any
 
 
 class BaseResourceDetailWidget(ScrollableContainer):

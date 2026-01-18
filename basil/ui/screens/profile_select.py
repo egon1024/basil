@@ -1,18 +1,24 @@
+# Built-in imports
+from datetime import datetime
+from pathlib import Path
+
+# 3rd party imports
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.containers import Container, Vertical, Horizontal
+from textual.containers import Container, Horizontal
 from textual.widgets import Button, Static, Label, DataTable, Input
 from textual.binding import Binding
+
+# Basil imports
 from basil.profile_manager import ProfileManager, Profile
 from basil.ui.widgets.path_input import PathInput
-from pathlib import Path
 
 
 class ProfileSelectScreen(Screen):
     """
     Screen for selecting or managing configuration profiles.
     """
-    
+
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", show=True),
         Binding("n", "new_profile", "New Profile", show=True),
@@ -20,12 +26,12 @@ class ProfileSelectScreen(Screen):
         Binding("d", "delete_profile", "Delete", show=True),
         Binding("enter", "load_profile", "Load", show=True),
     ]
-    
+
     CSS = """
     ProfileSelectScreen {
         align: center middle;
     }
-    
+
     #profile-container {
         width: 80;
         height: auto;
@@ -33,41 +39,41 @@ class ProfileSelectScreen(Screen):
         border: solid $primary;
         padding: 1 2;
     }
-    
+
     #title {
         text-align: center;
         text-style: bold;
         margin-bottom: 1;
     }
-    
+
     #subtitle {
         text-align: center;
         color: $text-muted;
         margin-bottom: 1;
     }
-    
+
     #profiles-table {
         height: 20;
         margin-bottom: 1;
     }
-    
+
     #button-container {
         layout: horizontal;
         height: auto;
         align: center middle;
     }
-    
+
     Button {
         margin: 0 1;
     }
-    
+
     #error-message {
         color: $error;
         text-align: center;
         margin-top: 1;
         height: auto;
     }
-    
+
     #info-message {
         color: $accent;
         text-align: center;
@@ -75,12 +81,12 @@ class ProfileSelectScreen(Screen):
         height: auto;
     }
     """
-    
+
     def __init__(self):
         super().__init__()
         self.profile_manager = ProfileManager()
         self.selected_profile_name = None
-    
+
     def compose(self) -> ComposeResult:
         """
         Create the UI components.
@@ -88,22 +94,22 @@ class ProfileSelectScreen(Screen):
         with Container(id="profile-container"):
             yield Label("Configuration Profiles", id="title")
             yield Label("Select a profile or create a new one", id="subtitle")
-            
+
             # Table to display profiles
             table = DataTable(id="profiles-table")
             table.cursor_type = "row"
             table.zebra_stripes = True
             yield table
-            
+
             with Horizontal(id="button-container"):
                 yield Button("Load", variant="primary", id="load-button")
                 yield Button("New", variant="success", id="new-button")
                 yield Button("Import", variant="default", id="import-button")
                 yield Button("Delete", variant="error", id="delete-button")
-            
+
             yield Static("", id="error-message")
             yield Static("", id="info-message")
-    
+
     def on_mount(self) -> None:
         """
         Load profiles when screen is mounted.
@@ -113,7 +119,7 @@ class ProfileSelectScreen(Screen):
         # Set focus to the Load button so pressing Enter will load the profile
         load_button = self.query_one("#load-button", Button)
         load_button.focus()
-    
+
     def _load_profiles(self) -> None:
         """
         Load and display profiles in the table.
@@ -168,7 +174,6 @@ class ProfileSelectScreen(Screen):
         for profile in valid_profiles:
             # Format last used timestamp
             try:
-                from datetime import datetime
                 dt = datetime.fromisoformat(profile.last_used)
                 last_used_str = dt.strftime("%Y-%m-%d %H:%M")
             except Exception:
@@ -191,17 +196,17 @@ class ProfileSelectScreen(Screen):
             # Only update if we didn't already show deletion message
             if not deleted_profiles:
                 info_display.update(f"Selected: {self.selected_profile_name}")
-    
+
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """
         Handle row selection in the profiles table.
         """
         self.selected_profile_name = event.row_key.value
-        
+
         # Clear messages
         self.query_one("#error-message", Static).update("")
         self.query_one("#info-message", Static).update(f"Selected: {self.selected_profile_name}")
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
         Handle button presses.
@@ -214,7 +219,7 @@ class ProfileSelectScreen(Screen):
             self.action_import_profile()
         elif event.button.id == "delete-button":
             self.action_delete_profile()
-    
+
     def action_load_profile(self) -> None:
         """
         Load the selected profile.
@@ -223,37 +228,37 @@ class ProfileSelectScreen(Screen):
             error_display = self.query_one("#error-message", Static)
             error_display.update("Please select a profile to load")
             return
-        
+
         profile = self.profile_manager.get_profile(self.selected_profile_name)
         if not profile:
             error_display = self.query_one("#error-message", Static)
             error_display.update(f"Profile '{self.selected_profile_name}' not found")
             return
-        
+
         # Check if config file exists
         config_path = Path(profile.path).expanduser()
         if not config_path.exists():
             error_display = self.query_one("#error-message", Static)
             error_display.update(f"Config file not found: {config_path}")
             return
-        
+
         # Store profile info and switch to config load screen
         self.app.current_profile = profile
         self.app.push_screen("config_load")
-    
+
     def action_new_profile(self) -> None:
         """
         Create a new profile.
         """
         # Switch to new profile dialog
         self.app.push_screen(NewProfileDialog(self.profile_manager, self._on_profile_created))
-    
+
     def action_import_profile(self) -> None:
         """
         Import an existing config file as a new profile.
         """
         self.app.push_screen(ImportProfileDialog(self.profile_manager, self._on_profile_imported))
-    
+
     def action_delete_profile(self) -> None:
         """
         Delete the selected profile.
@@ -262,7 +267,7 @@ class ProfileSelectScreen(Screen):
             error_display = self.query_one("#error-message", Static)
             error_display.update("Please select a profile to delete")
             return
-        
+
         # Confirm deletion
         def handle_response(confirmed: bool, delete_file: bool) -> None:
             if confirmed:
@@ -275,14 +280,14 @@ class ProfileSelectScreen(Screen):
                 except Exception as e:
                     error_display = self.query_one("#error-message", Static)
                     error_display.update(f"Failed to delete profile: {e}")
-        
+
         self.app.push_screen(
             DeleteConfirmDialog(
                 f"Delete profile '{self.selected_profile_name}'?",
                 handle_response
             )
         )
-    
+
     def _on_profile_created(self, profile: Profile) -> None:
         """
         Callback when a new profile is created.
@@ -290,11 +295,11 @@ class ProfileSelectScreen(Screen):
         self._load_profiles()
         info_display = self.query_one("#info-message", Static)
         info_display.update(f"Profile '{profile.name}' created")
-        
+
         # Store profile and proceed to config creation
         self.app.current_profile = profile
         self.app.push_screen("config_create")
-    
+
     def _on_profile_imported(self, profile: Profile) -> None:
         """
         Callback when a profile is imported.
@@ -302,7 +307,7 @@ class ProfileSelectScreen(Screen):
         self._load_profiles()
         info_display = self.query_one("#info-message", Static)
         info_display.update(f"Profile '{profile.name}' imported")
-    
+
     def action_quit(self) -> None:
         """
         Exit the application.
@@ -314,12 +319,12 @@ class NewProfileDialog(Screen):
     """
     Dialog for creating a new profile.
     """
-    
+
     CSS = """
     NewProfileDialog {
         align: center middle;
     }
-    
+
     #dialog-container {
         width: 60;
         height: auto;
@@ -327,33 +332,33 @@ class NewProfileDialog(Screen):
         padding: 1 2;
         background: $surface;
     }
-    
+
     #dialog-title {
         text-align: center;
         text-style: bold;
         margin-bottom: 1;
     }
-    
+
     .input-label {
         margin-top: 1;
         margin-bottom: 0;
     }
-    
+
     Input {
         margin-bottom: 1;
     }
-    
+
     #button-container {
         layout: horizontal;
         height: auto;
         align: center middle;
         margin-top: 1;
     }
-    
+
     Button {
         margin: 0 1;
     }
-    
+
     #error-message {
         color: $error;
         text-align: center;
@@ -361,12 +366,12 @@ class NewProfileDialog(Screen):
         height: auto;
     }
     """
-    
+
     def __init__(self, profile_manager: ProfileManager, callback):
         super().__init__()
         self.profile_manager = profile_manager
         self.callback = callback
-    
+
     def compose(self) -> ComposeResult:
         """
         Create dialog UI.
@@ -387,7 +392,7 @@ class NewProfileDialog(Screen):
                 yield Button("Create", variant="primary", id="create-button")
                 yield Button("Cancel", variant="default", id="cancel-button")
             yield Static("", id="error-message")
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
         Handle button press.
@@ -396,13 +401,13 @@ class NewProfileDialog(Screen):
             self._create_profile()
         elif event.button.id == "cancel-button":
             self.app.pop_screen()
-    
+
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """
         Handle Enter key in input fields.
         """
         self._create_profile()
-    
+
     def _create_profile(self) -> None:
         """
         Create the new profile.
@@ -410,22 +415,22 @@ class NewProfileDialog(Screen):
         name_input = self.query_one("#profile-name", Input)
         description_input = self.query_one("#profile-description", Input)
         error_display = self.query_one("#error-message", Static)
-        
+
         name = name_input.value.strip()
         description = description_input.value.strip()
-        
+
         if not name:
             error_display.update("Profile name is required")
             return
-        
+
         if self.profile_manager.profile_exists(name):
             error_display.update(f"Profile '{name}' already exists")
             return
-        
+
         # Create profile with generated path
         config_path = self.profile_manager.get_config_path(name)
         profile = Profile(name, description, str(config_path))
-        
+
         try:
             self.profile_manager.add_profile(profile)
             self.app.pop_screen()
@@ -485,12 +490,12 @@ class ImportProfileDialog(Screen):
         height: auto;
     }
     """
-    
+
     def __init__(self, profile_manager: ProfileManager, callback):
         super().__init__()
         self.profile_manager = profile_manager
         self.callback = callback
-    
+
     def compose(self) -> ComposeResult:
         """
         Create dialog UI.
@@ -522,7 +527,7 @@ class ImportProfileDialog(Screen):
                 yield Button("Import", variant="primary", id="import-button")
                 yield Button("Cancel", variant="default", id="cancel-button")
             yield Static("", id="error-message")
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
         Handle button press.
@@ -531,13 +536,13 @@ class ImportProfileDialog(Screen):
             self._import_profile()
         elif event.button.id == "cancel-button":
             self.app.pop_screen()
-    
+
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """
         Handle Enter key in input fields.
         """
         self._import_profile()
-    
+
     def _import_profile(self) -> None:
         """
         Import the profile.
@@ -546,32 +551,32 @@ class ImportProfileDialog(Screen):
         description_input = self.query_one("#profile-description", Input)
         path_input = self.query_one("#config-path", Input)
         error_display = self.query_one("#error-message", Static)
-        
+
         name = name_input.value.strip()
         description = description_input.value.strip()
         config_path = path_input.value.strip()
-        
+
         if not name:
             error_display.update("Profile name is required")
             return
-        
+
         if not config_path:
             error_display.update("Config file path is required")
             return
-        
+
         # Check if file exists
         path = Path(config_path).expanduser()
         if not path.exists():
             error_display.update(f"File not found: {config_path}")
             return
-        
+
         if self.profile_manager.profile_exists(name):
             error_display.update(f"Profile '{name}' already exists")
             return
-        
+
         # Create profile with the provided path
         profile = Profile(name, description, str(path))
-        
+
         try:
             self.profile_manager.add_profile(profile)
             self.app.pop_screen()
@@ -584,12 +589,12 @@ class DeleteConfirmDialog(Screen):
     """
     Confirmation dialog for deleting a profile.
     """
-    
+
     CSS = """
     DeleteConfirmDialog {
         align: center middle;
     }
-    
+
     #dialog-container {
         width: 60;
         height: auto;
@@ -597,36 +602,36 @@ class DeleteConfirmDialog(Screen):
         padding: 1 2;
         background: $surface;
     }
-    
+
     #dialog-message {
         text-align: center;
         margin-bottom: 1;
     }
-    
+
     #checkbox-container {
         layout: horizontal;
         height: auto;
         align: center middle;
         margin-bottom: 1;
     }
-    
+
     #button-container {
         layout: horizontal;
         height: auto;
         align: center middle;
     }
-    
+
     Button {
         margin: 0 1;
     }
     """
-    
+
     def __init__(self, message: str, callback):
         super().__init__()
         self.message = message
         self.callback = callback
         self.delete_file = False
-    
+
     def compose(self) -> ComposeResult:
         """
         Create dialog UI.
@@ -642,7 +647,7 @@ class DeleteConfirmDialog(Screen):
             with Horizontal(id="button-container"):
                 yield Button("Delete", variant="error", id="yes-button")
                 yield Button("Cancel", variant="default", id="no-button")
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
         Handle button press.

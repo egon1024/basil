@@ -20,7 +20,7 @@ def test_sensu_connection(config: Dict[str, Any]) -> Tuple[bool, str]:
     """
     try:
         # Create a temporary connection
-        conn = SensuConnection(
+        _ = SensuConnection(
             name=config.get("name", "test"),
             url=config["url"],
             api_key=config.get("api_key"),

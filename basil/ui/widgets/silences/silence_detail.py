@@ -1,7 +1,10 @@
-from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
-from basil.client import SensuResource
+# Built-in imports
 import json
 from dataclasses import asdict, is_dataclass
+
+# Basil imports
+from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
+from basil.client import SensuResource
 
 
 class SilenceDetailWidget(BaseResourceDetailWidget):
@@ -38,7 +41,7 @@ class SilenceDetailWidget(BaseResourceDetailWidget):
         expire = getattr(data, 'expire', None)
         if expire:
             if expire == -1:
-                lines.append(f"  Expires: Never")
+                lines.append("  Expires: Never")
             elif isinstance(expire, int):
                 lines.append(f"  Expires: {self.format_timestamp(expire)}")
             else:

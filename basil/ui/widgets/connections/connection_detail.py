@@ -1,9 +1,14 @@
-from textual.app import ComposeResult
-from textual.widgets import Static, Button, Label
-from textual.containers import ScrollableContainer, Vertical, Horizontal
-from textual.message import Message
-from basil.ui.widgets.server_config import ServerConfigWidget
+# Built-in imports
 from typing import Dict, Any, Optional
+
+# 3rd party imports
+from textual.app import ComposeResult
+from textual.widgets import Static, Button
+from textual.containers import ScrollableContainer, Horizontal
+from textual.message import Message
+
+# Basil imports
+from basil.ui.widgets.server_config import ServerConfigWidget
 
 
 class ConnectionDetailWidget(ScrollableContainer):
@@ -195,7 +200,7 @@ class ConnectionDetailWidget(ScrollableContainer):
                 delete_button.disabled = True
                 clear_button.disabled = True
                 cancel_button.disabled = True
-        except Exception as e:
+        except Exception:
             # Widgets not yet mounted - log for debugging
             pass
 

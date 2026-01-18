@@ -1,10 +1,12 @@
+# third party imports
 from textual.app import App
 from textual.binding import Binding
+
+# Basil imports
 from basil.ui.screens.profile_select import ProfileSelectScreen
 from basil.ui.screens.config_load import ConfigLoadScreen
 from basil.ui.screens.config_create import ConfigCreateScreen
 from basil.ui.screens.main import MainScreen
-
 
 class BasilApp(App):
     """
@@ -22,7 +24,7 @@ class BasilApp(App):
         super().__init__()
         self.connection_manager = None
         self.current_profile = None
-    
+
     def on_mount(self) -> None:
         """
         Called when app starts.
@@ -32,6 +34,6 @@ class BasilApp(App):
         self.install_screen(ConfigLoadScreen(), name="config_load")
         self.install_screen(ConfigCreateScreen(), name="config_create")
         self.install_screen(MainScreen(), name="main")
-        
+
         # Start with profile selection screen
         self.push_screen("profile_select")

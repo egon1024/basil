@@ -1,0 +1,13 @@
+/* Global app styles */
+Screen {
+    background: $surface;
+}
+
+/* Tabbed content */
+TabbedContent {
+    height: 100%;
+}
+
+TabPane {
+    padding: 1;
+}

@@ -2,7 +2,7 @@
 Base class for resource list widgets.
 """
 # builtin imports
-from typing import List, Any
+from typing import List, Any, Optional
 
 # third party imports
 from textual.widgets import DataTable

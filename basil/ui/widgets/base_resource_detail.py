@@ -3,7 +3,7 @@ Base class for resource detail widgets.
 """
 # built-in imports
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 # Third party imports
 from textual.app import ComposeResult

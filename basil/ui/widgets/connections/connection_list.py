@@ -2,7 +2,7 @@
 Widget for displaying a list of Connections.
 """
 # built-in imports
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 
 # Basil imports
 from textual.widgets import DataTable

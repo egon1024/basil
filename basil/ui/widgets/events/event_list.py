@@ -116,7 +116,7 @@ class EventListWidget(BaseResourceListWidget):  # pylint: disable=too-many-ances
         # Set sort state for indicators (Status column, Descending)
         self._sort_column = 3
         self._sort_reverse = True
-        
+
         def multi_sort_key(resource: SensuResource):
             row_data = self.extract_row_data(resource)
             # Extract entity (index 1), check (index 2), and status (index 3)

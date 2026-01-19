@@ -13,7 +13,6 @@ from textual.worker import Worker, WorkerState
 # Basil imports
 from basil.client import SensuResource, SensuConnection
 
-
 class BaseResourceListWidget(DataTable):
     """
     Abstract base class for resource list widgets.
@@ -44,7 +43,7 @@ class BaseResourceListWidget(DataTable):
         self._initial_sort_applied = False
         self._original_column_labels: Dict[Any, str] = {}
         self._using_default_sort = False
-        
+
         # Worker tracking for parallel loading
         self.pending_results: Dict[str, List[SensuResource]] = {}
         self.completed_worker_count: int = 0
@@ -177,7 +176,11 @@ class BaseResourceListWidget(DataTable):
         Returns:
             The selected SensuResource, or None if no valid selection
         """
-        return self.resources[self.cursor_row] if 0 <= self.cursor_row < len(self.resources) else None
+
+        if 0 <= self.cursor_row < len(self.resources):
+            return self.resources[self.cursor_row]
+
+        return None
 
     @work(thread=True, exclusive=False)
     async def fetch_from_connection_worker(
@@ -228,7 +231,7 @@ class BaseResourceListWidget(DataTable):
         connections = connection_manager.get_all_connections()
         self.expected_worker_count = len(connections)
         self.is_loading = True
-        
+
         # Store kwargs for reuse during batched updates
         self._load_kwargs = kwargs
 
@@ -277,29 +280,29 @@ class BaseResourceListWidget(DataTable):
             # Still check if we should finalize (count failed workers)
             if self.completed_worker_count >= self.expected_worker_count:
                 self._finalize_load()
-                
+
     def _flush_updates(self) -> None:
         """Flush currently available results to the UI."""
         self._batch_timer = None
         if not self.is_loading:
             return
-            
+
         # Combine available results
         all_resources = []
         for resources in self.pending_results.values():
             all_resources.extend(resources)
-            
+
         # Update UI with currently available data
         # Note: We don't clear loading state yet
         self.load_resources(all_resources, **getattr(self, '_load_kwargs', {}))
-        
+
         # Add loading indicator at the bottom if still loading
         pending_count = self.expected_worker_count - len(self.pending_results)
         if pending_count > 0:
-             # We can't easily add a row that isn't a resource in DataTable easily if typed
-             # but we can maybe set the title or subtitle?
-             # For now, just having partial data is better than nothing.
-             pass
+            # We can't easily add a row that isn't a resource in DataTable easily if typed
+            # but we can maybe set the title or subtitle?
+            # For now, just having partial data is better than nothing.
+            pass
 
     def _finalize_load(self) -> None:
         """Combine all results and update UI once."""
@@ -350,7 +353,7 @@ class BaseResourceListWidget(DataTable):
         """
         event.stop()
         column_index = event.column_index
-        
+
         # User manual sort - disable default sort tracking
         self._using_default_sort = False
 

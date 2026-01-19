@@ -25,7 +25,7 @@ from basil.ui.widgets.connections import ConnectionListWidget, ConnectionDetailW
 class CustomTabbedContent(TabbedContent):
     """TabbedContent that doesn't consume our custom key bindings."""
 
-    def on_key(self, event) -> None:
+    def on_key(self, event) -> None:  # pylint: disable=useless-return
         """Override to not handle e, n, s, k, c, r keys - let them bubble to Screen."""
         if event.key in ('e', 'n', 's', 'k', 'c', 'r'):
             # Don't handle these keys, let them bubble up to the Screen
@@ -167,8 +167,6 @@ class MainScreen(Screen):
 
         if not connection_manager:
             return
-
-        any_failures = False
 
         try:
             # Load events first (needed for entity check counts and detail view)
@@ -416,7 +414,7 @@ class MainScreen(Screen):
         except Exception as e:
             self.notify(f"Error reloading connections: {e}", severity="error")
 
-    def on_base_resource_detail_widget_close(self, event: BaseResourceDetailWidget.Close) -> None:
+    def on_base_resource_detail_widget_close(self, event: BaseResourceDetailWidget.Close) -> None:  # pylint: disable=unused-argument
         """Handle close message from detail widget."""
         self.update_panel_visibility(False)
         self._focus_current_list()

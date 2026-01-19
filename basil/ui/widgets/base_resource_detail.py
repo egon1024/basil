@@ -21,13 +21,7 @@ class BaseResourceDetailWidget(ScrollableContainer):
 
     This base class provides common functionality for displaying detailed
     information about a selected Sensu resource in a scrollable container.
-    """
 
-    class Close(Message):
-        """Message sent when the close button is pressed."""
-        pass
-
-    """
     Subclasses must implement:
         format_resource(resource): Format the resource for display
 
@@ -37,6 +31,9 @@ class BaseResourceDetailWidget(ScrollableContainer):
         get_status_markup(): Get colored markup for status codes
         safe_get(): Safely get attributes from objects or dicts
     """
+
+    class Close(Message):
+        """Message sent when the close button is pressed."""
 
     DEFAULT_CSS = """
     BaseResourceDetailWidget {
@@ -99,7 +96,7 @@ class BaseResourceDetailWidget(ScrollableContainer):
         super().__init__(*args, **kwargs)
         self.current_resource: Optional[SensuResource] = None
 
-    def on_key(self, event) -> None:
+    def on_key(self, event) -> None:  # pylint: disable=useless-return
         """Override to not consume e, n, s, c, r keys - let them bubble to Screen."""
         if event.key in ('e', 'n', 'c', 'r'):
             # Don't handle these keys, let them bubble up

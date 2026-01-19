@@ -136,6 +136,48 @@ class ConnectionManager:
         """
         return list(self._connections.values())
 
+    def get_from_connection(
+        self,
+        connection: SensuConnection,
+        resource_type: str
+    ) -> List[SensuResource]:
+        """
+        Fetch resources from a SINGLE connection.
+
+        This method is designed to be called from worker threads for parallel fetching.
+
+        Args:
+            connection: The SensuConnection to fetch from
+            resource_type: The resource type (e.g., 'entities', 'events', 'silenced', 'checks')
+
+        Returns:
+            List of SensuResource instances from this connection.
+            Returns empty list on error.
+        """
+        # Map resource types to fawlty resource classes
+        resource_map = {
+            'entities': Entity,
+            'events': Event,
+            'checks': Check,
+            'silenced': Silence,
+        }
+
+        resource_class = resource_map.get(resource_type)
+        if not resource_class:
+            # Unknown resource type
+            return []
+
+        try:
+            # Call Resource.get(client=..., namespace=...)
+            items = resource_class.get(client=connection.client, namespace=connection.namespace)
+
+            # Wrap each item with connection metadata
+            return [SensuResource(data=item, connection=connection) for item in items]
+
+        except Exception:
+            # Return empty list on error, let caller handle logging
+            return []
+
     def get_all(self, resource_type: str) -> Optional[List[SensuResource]]:
         """
         Fetch all items of a given resource type from all connections.

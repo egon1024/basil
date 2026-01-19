@@ -12,6 +12,7 @@ from textual.message import Message
 
 # Basil imports
 from basil.ui.widgets.server_config import ServerConfigWidget
+from basil.ui.widgets.base_resource_detail import BaseResourceDetailWidget
 
 
 class ConnectionDetailWidget(ScrollableContainer):
@@ -61,6 +62,21 @@ class ConnectionDetailWidget(ScrollableContainer):
     #connection-form Vertical {
         height: auto;
     }
+
+    .detail-header {
+        height: auto;
+        dock: top;
+        align: right top;
+        margin-bottom: 1;
+    }
+
+    #close-detail {
+        min-width: 4;
+        height: 1;
+        border: none;
+        background: $error; 
+        color: white;
+    }
     """
 
     class ConnectionSaved(Message):
@@ -91,9 +107,11 @@ class ConnectionDetailWidget(ScrollableContainer):
 
     def compose(self) -> ComposeResult:
         """Create the detail view components."""
-        yield Static(
-            "Select a connection to view details", id="detail-title", classes="detail-title"
-        )
+        with Horizontal(classes="detail-header"):
+            yield Static(
+                "Select a connection to view details", id="detail-title", classes="detail-title"
+            )
+            yield Button("X", id="close-detail", variant="error")
         yield ServerConfigWidget(id="connection-form")
         with Horizontal(classes="button-row"):
             yield Button("New", variant="success", id="new-button")
@@ -232,6 +250,9 @@ class ConnectionDetailWidget(ScrollableContainer):
             self.clear()
         elif event.button.id == "cancel-button":
             self.clear()
+        elif event.button.id == "close-detail":
+            self.post_message(BaseResourceDetailWidget.Close())
+            event.stop()
 
     def _save_connection(self) -> None:
         """Save the current connection configuration."""

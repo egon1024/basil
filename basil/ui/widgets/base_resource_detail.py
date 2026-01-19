@@ -7,8 +7,9 @@ from typing import Any, Optional
 
 # Third party imports
 from textual.app import ComposeResult
-from textual.widgets import Static
-from textual.containers import ScrollableContainer
+from textual.message import Message
+from textual.widgets import Static, Label
+from textual.containers import ScrollableContainer, Horizontal
 
 # Basil imports
 from basil.client import SensuResource
@@ -20,7 +21,13 @@ class BaseResourceDetailWidget(ScrollableContainer):
 
     This base class provides common functionality for displaying detailed
     information about a selected Sensu resource in a scrollable container.
+    """
 
+    class Close(Message):
+        """Message sent when the close button is pressed."""
+        pass
+
+    """
     Subclasses must implement:
         format_resource(resource): Format the resource for display
 
@@ -72,6 +79,19 @@ class BaseResourceDetailWidget(ScrollableContainer):
         color: $error;
         text-style: bold;
     }
+
+    .detail-header {
+        height: auto;
+        align: right top;
+        margin-bottom: 1;
+    }
+
+    #close-detail {
+        width: auto;
+        height: 1;
+        background: $error;
+        color: white;
+    }
     """
 
     def __init__(self, *args, **kwargs):
@@ -84,12 +104,19 @@ class BaseResourceDetailWidget(ScrollableContainer):
         if event.key in ('e', 'n', 'c', 'r'):
             # Don't handle these keys, let them bubble up
             return
-        # For 's' and other keys, use default ScrollableContainer behavior
-        super().on_key(event)  # pylint: disable=no-member
+        # For all other keys, don't stop them - they will propagate naturally
 
     def compose(self) -> ComposeResult:
         """Create the detail view components."""
+        with Horizontal(classes="detail-header"):
+            yield Label("[X]", id="close-detail")
         yield Static("Select an item to view details", id="detail-content")
+
+    def on_click(self, event) -> None:
+        """Handle click events."""
+        if event.widget.id == "close-detail":
+            self.post_message(self.Close())
+            event.stop()
 
     def format_resource(self, resource: SensuResource) -> str:
         """
